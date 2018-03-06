@@ -8,58 +8,69 @@ implicit functions x:P->X defined by a system of equations h(z,p)=0 via
 Gauss-Siedel Newton.
 --------------------------------------------------------------------------------
 Inputs:
-Xin:       IntervalBox{N,Float64} - Bounds for dependent variables
-Pin:       IntervalBox{N,Float64} - Bounds for independent variables
-h:         function - Equations defining potential implicit function
-hj:        function - Jacobian of h(x,p) with respect to x
-opt:       Param_Bisect_Opts - Parametric Bisection Options
+* Xin:       Vector{Interval{Float64}} - Bounds for dependent variables
+* Pin:       Vector{Interval{Float64}} - Bounds for independent variables
+* h:         function - Equations defining potential implicit function
+* hj:        function - Jacobian of h(x,p) with respect to x
+* opt:       Param_Bisect_Opts - Parametric Bisection Options
 --------------------------------------------------------------------------------
 Returns:
 A tuple (sol_set, ind_set, NIT, hist) where
-sol_set:     Array - Interval boxes known to contain unique implicit function
-ind_set:     Array - Interval boxes known to contain unique implicit function
-NIT:         Int64 - Final iteration number
-hist:        Array - Storage object with info on problem solution history
+* sol_set:     Array - Interval boxes known to contain unique implicit function
+* ind_set:     Array - Interval boxes known to contain unique implicit function
+* NIT:         Int64 - Final iteration number
+* hist:        Array - Storage object with info on problem solution history
 --------------------------------------------------------------------------------
 """
-function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
+function Generalized_Param_Bisection(Xin::Vector{Interval{Float64}},
+                                     Pin::Vector{Interval{Float64}},
+                                     h::Function,
+                                     hj::Function,
+                                     opt::Param_Bisect_Opts)
 
   # unpacks options for general bisection
   DAGflag::Bool = opt.DAGflag
   LPflag::Bool = opt.LPflag
-  max_iter = opt.kmax_main
-  max_iter_cntr = opt.kmax_cntr
-  style = opt.style
-  display = opt.display
-  ptol = opt.ptol
-  etol = opt.etol
-  rtol = opt.rtol
-  pbisect = opt.p_rel_bisect
-  Pstart = copy(Pin)
-  bp = 1
+  max_iter::Int64 = opt.kmax_main
+  max_iter_cntr::Int64 = opt.kmax_cntr
+  style::String = opt.style
+  display::String = opt.display
+  ptol::Float64 = opt.ptol
+  etol::Float64 = opt.etol
+  rtol::Float64 = opt.rtol
+  pbisect::Bool = opt.p_rel_bisect
+  Pstart::Vector{Interval{Float64}} = copy(Pin)
+  bp::Int64 = 1
 
   # generates directed graph contractor parameters
   if (DAGflag)
-    DAGr = opt.DAGpass
-    DAGh = opt.DAGh
-    DAGg = opt.DAGg
-    DAGsym = opt.DAGsym
-    DAGpack = vcat(Xin,Pin)
-    DAGparam = Contractor_Params(DAGh,DAGg,DAGpack,DAGsym)
+    DAGr::Int64 = opt.DAGpass
+    DAGpack::Vector{Interval{Float64}} = vcat(Xin,Pin)
+    exprs = vcat(opt.DAGh,opt.DAGg)
+    hbnds::Vector{Float64} = zeros(Float64,length(Xin))
+    if (length(opt.DAGgL)>0)
+      gL::Vector{Float64} = vcat(hbnds,opt.DAGgL)
+      gU::Vector{Float64} = vcat(hbnds,opt.DAGgU)
+    else
+      gL = vcat(hbnds)
+      gU = vcat(hbnds)
+    end
+    npx::Int64 = length(Xin) + length(Pin)
+    DAGparam = Generate_TapeList(exprs,npx,gL,gU)
   end
 
   # packs parameters into option array
-  opt = [max_iter_cntr,etol,rtol,style]
+  opt::Array{Any,1} = [max_iter_cntr,etol,rtol,style]
 
   # sets dimensions
-  np = length(Pin)
-  nx = length(Xin)
+  np::Int64 = length(Pin)
+  nx::Int64 = length(Xin)
 
   # initializes count variables
-  NIT = 0
-  NMEX = 0
-  NPINMEX = 0
-  NS = 0
+  NIT::Int64 = 0
+  NMEX::Int64 = 0
+  NPINMEX::Int64 = 0
+  NS::Int64 = 0
 
   # creates working stack & storage objects, pushes initial box onto stack
   sol_set = []
@@ -67,7 +78,7 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
   stack = []
   hist = []
   push!(stack,[Xin,Pin])
-  disp = 0
+  disp::Int64 = 0
 
 
   # Check Termination
@@ -77,15 +88,15 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
       println(NIT, "  ||  ",length(stack),"  ||  ",length(sol_set),"  ||  ",length(ind_set))
     #end
     #### Resets the tests variables and unpacks the stack ####
-    Iflag = false
-    Eflag = false
-    PIflag = false
-    PIcert = false
+    Iflag::Bool = false
+    Eflag::Bool = false
+    PIflag::Bool = false
+    PIcert::Bool = false
     eDflag = false
     cnode = pop!(stack)
-    Xw = copy(cnode[1])
-    X0 = copy(cnode[1])
-    Pw = copy(cnode[2])
+    Xw::Vector{Interval{Float64}} = copy(cnode[1])
+    X0::Vector{Interval{Float64}} = copy(cnode[1])
+    Pw::Vector{Interval{Float64}} = copy(cnode[2])
 
     #### Check for exclusion via Miranda's Test ####
     Eflag = MirandaExc(h,Xw,Pw,Eflag)
@@ -100,7 +111,7 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
       if (DAGflag)
         #### Contracts box using interval contractors on DAG ####
         DAGpack = vcat(Xw,Pw)
-        DAGpack = Contractor_Eval(DAGh,DAGg,DAGpack,DAGsym,DAGr,DAGparam)
+        DAGContractor!(DAGpack,DAGparam,DAGr)
         for i=1:length(DAGpack)
           #### Fathoms by interval contractors ####
           if (isempty(DAGpack[i]))

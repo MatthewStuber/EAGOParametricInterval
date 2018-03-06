@@ -7,48 +7,60 @@ Description: Bisects box in either X or P dimension.
 Inputs:
 h           function - h(z,p)
 hj          function - Jacobian of h(z,p) w.r.t. z
-CurrNode    IntervalBox - Current X node
-P           IntervalBox - Current P node
-NextNode    IntervalBox - New X node
-NextNodeP   IntervalBox - New P node 1
-Ptemp       IntervalBox - New P node 2
+CurrNode    Vector{Interval{Float64}} - Current X node
+P           Vector{Interval{Float64}} - Current P node
+NextNode    Vector{Interval{Float64}} - New X node
+NextNodeP   Vector{Interval{Float64}} - New P node 1
+Ptemp       Vector{Interval{Float64}} - New P node 2
 PIflag      Bool - Partial Inclusion Flag
 Iflag       Bool - Inclusion flag
 Eflag       Bool - Exclusion flag
 ptol        Float64 - tolerance for P dimension size
 pbisect     Bool - bisect based on relative width?
-Pstart      Pstart - initial P size
+Pstart      Vector{Interval{Float64}} - initial P size
 --------------------------------------------------------------------------------
 Returns:
 bp          Int64 - Cut type flag
-CurrNode    IntervalBox - Current X node
-P           IntervalBox - Current P node
-NextNode    IntervalBox - New X node
-NextNodeP   IntervalBox - New P node 1
-Ptemp       IntervalBox - New P node 2
+CurrNode    Vector{Interval{Float64}} - Current X node
+P           Vector{Interval{Float64}} - Current P node
+NextNode    Vector{Interval{Float64}} - New X node
+NextNodeP   Vector{Interval{Float64}} - New P node 1
+Ptemp       Vector{Interval{Float64}} - New P node 2
 --------------------------------------------------------------------------------
 """
 
-function XP_Bisection(h,hj,CurrNode,P,NextNode,NextNodeP,Ptemp,PIflag,Iflag,Eflag,ptol,pbisect,Pstart)
-  pPart = false
-  xCut = 0.15
-  pCutL = 0.0
-  pCutR = 0.0
-  IflagL = copy(Iflag)
-  IflagR = copy(Iflag)
-  EflagL = copy(Eflag)
-  EflagR = copy(Eflag)
+function XP_Bisection(h::Function,
+                      hj::Function,
+                      CurrNode::Vector{Interval{Float64}},
+                      P::Vector{Interval{Float64}},
+                      NextNode::Vector{Interval{Float64}},
+                      NextNodeP::Vector{Interval{Float64}},
+                      Ptemp::Vector{Interval{Float64}},
+                      PIflag::Bool,
+                      Iflag::Bool,
+                      Eflag::Bool,
+                      ptol::Float64,
+                      pbisect::Bool,
+                      Pstart::Vector{Interval{Float64}})
+  pPart::Bool = false
+  xCut::Float64 = 0.15
+  pCutL::Float64 = 0.0
+  pCutR::Float64 = 0.0
+  IflagL::Bool = copy(Iflag)
+  IflagR::Bool = copy(Iflag)
+  EflagL::Bool = copy(Eflag)
+  EflagR::Bool = copy(Eflag)
   XLeft = copy(CurrNode)
   XRight = copy(NextNode)
   PLeft = copy(P)
   PRight = copy(NextNodeP)
   Pmid = copy(Ptemp)
-  j = 0
-  jp = 0
-  bp = 0
+  j::Int64 = 0
+  jp::Int64 = 0
+  bp::Int64 = 0
   j, xCut,PIflag = bisectDirX(h,CurrNode,P,xCut,PIflag)
-  PIflagL = PIflag
-  PIflagR = PIflag
+  PIflagL::Bool = PIflag
+  PIflagR::Bool = PIflag
   if (PIflag == false)
     XLeft[j] = Interval(CurrNode[j].lo,xCut)
     XRight[j] = Interval(xCut,CurrNode[j].hi)
@@ -111,29 +123,33 @@ Description: Determine direction and position of cut in X dimension.
 --------------------------------------------------------------------------------
 Inputs:
 h        function - h(z,p)
-X        IntervalBox - for state variables
-P        IntervalBox - for decision variables
+X        Vector{Interval{Float64}} - for state variables
+P        Vector{Interval{Float64}} - for decision variables
 x        Currently Unused
 PIFlag   Bool - Flag for partial inclusion.
 --------------------------------------------------------------------------------
 Returns:
-jmax            - The dimension to cut X in
-xCut            - Cut value for X
-piflagtemp      - Partial Inclusion Flag
+jmax            Int64 - The dimension to cut X in
+xCut            Float64 - Cut value for X
+piflagtemp      Bool - Partial Inclusion Flag
 --------------------------------------------------------------------------------
 """
-function bisectDirX(h,X,P,x,PIFlag)
+function bisectDirX(h::Function,
+                    X::Vector{Interval{Float64}},
+                    P::Vector{Interval{Float64}},
+                    x::Vector{Float64},
+                    PIFlag::Bool)
 
-  piflagtemp = copy(PIFlag)
-  v = 1
-  iterm = 4
-  jmax = 1
-  k = -1
-  maxL = 0.0
-  disc = 20
-  Xold = copy(X)
-  Xnew = copy(X)
-  xCut = 0.0
+  piflagtemp::Bool = copy(PIFlag)
+  v::Int64 = 1
+  iterm::Int64 = 4
+  jmax::Int64 = 1
+  k::Int64 = -1
+  maxL::Float64 = 0.0
+  disc::Int64 = 20
+  Xold::Vector{Interval{Float64}} = copy(X)
+  Xnew::Vector{Interval{Float64}} = copy(X)
+  xCut::Float64 = 0.0
   maxL,jmax = findmax(diam.(X))
   if (v == 1)
     rad = diam(X[jmax])/2.0
@@ -158,7 +174,6 @@ function bisectDirX(h,X,P,x,PIFlag)
   if (k == -1)
     v = 2
   end
-
 
   if (v == 2)
     iterm = iterm*4
@@ -198,18 +213,21 @@ Description: Determines the direction to branch P in based on absolute/relative
 width and tolerance for P dimension size.
 --------------------------------------------------------------------------------
 Inputs:
-P         IntervalBox - P Box to bisect
+P         Vector{Interval{Float64}} - P Box to bisect
 ptol      Float64 - tolerance for P dimension size
 pbisect   Bool - bisect based on relative width?
-Pstart    IntervalBox - initial P size
+Pstart    Vector{Interval{Float64}} - initial P size
 --------------------------------------------------------------------------------
 Returns:
 jmax - The dimension to branch P in.
 --------------------------------------------------------------------------------
 """
-function bisectDirP(P,ptol::Float64,pbisect::Bool,Pstart)
-  jmax = 1
-  maxL = 0.0
+function bisectDirP(P::Vector{Interval{Float64}},
+                    ptol::Float64,
+                    pbisect::Bool,
+                    Pstart::Vector{Interval{Float64}})
+  jmax::Int64 = 1
+  maxL::Float64 = 0.0
   if (~pbisect)
     for i=1:length(P)
       if (maxL < diam(P[i]))
@@ -255,13 +273,13 @@ end
 Function:  partIncProc
 --------------------------------------------------------------------------------
 Description:
-Partial inclusion check.
+Partial inclusion check (uses Newton type operator test with Miranda)
 --------------------------------------------------------------------------------
 Inputs:
 h         function - h(z,p)
 hj        function - Jacobian of h(z,p) w.r.t. z
-X0        IntervalBox - state variables
-P         IntervalBox - decision variables
+X0        Vector{Interval{Float64}} - state variables
+P         Vector{Interval{Float64}} - decision variables
 exDim     Int64 - Dimension flag
 Iflag     Bool - Inclusion flag
 Eflag     Bool - Exclusion flag
@@ -274,33 +292,40 @@ Eflag     Bool - Exclusion flag
 PIflag    Bool - Partial Inclusion Flag
 --------------------------------------------------------------------------------
 """
-function partIncProc(h,hj,X0,P,exDim,Iflag,Eflag,PIflag)
+function partIncProc(h::Function,
+                     hj::Function,
+                     X0::Vector{Interval{Float64}},
+                     P::Vector{Interval{Float64}},
+                     exDim::Int64,
+                     Iflag::Bool,
+                     Eflag::Bool,
+                     PIflag::Bool)
 
-  nx = length(X)
-  S1 = Interval(0.0)
-  S2 = Interval(0.0)
-  k = 0
-  incl = -1
-  side = 0
-  inclusion = [false for i=1:length(X)]
-  exclusion = false
+  nx::Int64 = length(X)
+  S1::Interval{Float64} = Interval(0.0)
+  S2::Interval{Float64} = Interval(0.0)
+  k::Int64 = 0
+  incl::Int64 = -1
+  side::Int64 = 0
+  inclusion::Vector{Bool} = [false for i=1:length(X)]
+  exclusion::Bool = false
   Iflag = false
   Eflag = false
 
-  X = copy(X0)
-  Xpart = copy(X0)
+  X::Vector{Interval{Float64}} = copy(X0)
+  Xpart::Vector{Interval{Float64}} = copy(X0)
   Xpart[exDim] = xCut
   if (X[exDim].lo == xCut)
     side = 1
   end
 
-  x_mid = mid.(X)
-  H = h(x_mid,P)
-  J = hj(X,P)
-  Y = Preconditioner(hj,X,P,jac="User")
-  B = Y*H
-  M = Y*J
-  Xi = X
+  x_mid::Vector{Float64} = mid.(X)
+  H::Vector{Interval{Float64}} = h(x_mid,P)
+  J::Array{Interval{Float64},2} = hj(X,P)
+  Y::Array{Float64,2} = Preconditioner(hj,X,P,jac="User")
+  B::Vector{Interval{Float64}} = Y*H
+  M::Array{Interval{Float64},2} = Y*J
+  Xi::Vector{Interval{Float64}} = X
 
   for i=1:nx
     S1 = S2 = Interval(0.0)

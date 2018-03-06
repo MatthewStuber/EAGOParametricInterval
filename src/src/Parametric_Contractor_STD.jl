@@ -8,11 +8,11 @@ implicit functions x:P->X defined by a system of equations h(z,p)=0 via
 Gauss-Siedel Newton.
 --------------------------------------------------------------------------------
 Inputs:
-X0:        IntervalBox{N,Float64} - Bounds for dependent variables
-P:         IntervalBox{N,Float64} - Bounds for independent variables
+X0:        Vector{Interval{Float64}} - Bounds for dependent variables
+P:         Vector{Interval{Float64}} - Bounds for independent variables
 hj:        function - Jacobian of h(x,p) with respect to x
 h:         function - Equations defining potential implicit function
-opt:       Array{Float64,1} - Containing the following options
+opt:       Vector{Any} - Containing the following options
                               opt[1] - Int64: Number of iterations
                               opt[2] - Float64: Tolerance for equality of
                                                 intervals
@@ -25,51 +25,58 @@ eDflag:    Bool - True if extended division occured in iteration
 --------------------------------------------------------------------------------
 Returns:
 A tuple (X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh) where
-X:                IntervalBox{N,Float64} - Output interval box
-Xtemp:            IntervalBox{N,Float64} - Extra box formed from extended division
+X:                Vector{Interval{Float64}} - Output interval box
+Xtemp:            Vector{Interval{Float64}} - Extra box formed from extended division
 Eflag:            Bool - True if no implicit function exists in box
 Iflag:            Bool - True if unique implicit function exists in box
-inclusionLow:     Array{Bool} - Each component is true if corresponding variable
+inclusionLow:     Vector{Bool} - Each component is true if corresponding variable
                                 contracted from lower bound
-inclusionHigh:    Array{Bool} - Each component is true if corresponding variable
+inclusionHigh:    Vector{Bool} - Each component is true if corresponding variable
                                 contracted from upper bound
 --------------------------------------------------------------------------------
 """
-function PI_NewtonGS(X0,P,hj,h,opt,Eflag,Iflag,eDflag)
+function PI_NewtonGS(X0::Vector{Interval{Float64}},
+                     P::Vector{Interval{Float64}},
+                     hj::Function,
+                     h::Function,
+                     opt::Vector{Any},
+                     Eflag::Bool,
+                     Iflag::Bool,
+                     eDflag::Bool)
   # unpacks option file
-  kmax = opt[1]
-  etol = opt[2]
-  rtol = opt[3]
+  kmax::Int64 = opt[1]
+  etol::Float64 = opt[2]
+  rtol::Float64 = opt[3]
 
   # Initializes variables
-  nx = length(X0)
-  S1::Interval = Interval(0.0)
-  S2::Interval = Interval(0.0)
-  inclusion = [false for i=1:nx]
-  inclusionHigh = [false for i=1:nx]
-  inclusionLow = [false for i=1:nx]
-  eD = 0
+  nx::Int64 = length(X0)
+  S1::Interval{Float64} = Interval(0.0)
+  S2::Interval{Float64} = Interval(0.0)
+  inclusion::Vector{Bool} = [false for i=1:nx]
+  inclusionHigh::Vector{Bool} = [false for i=1:nx]
+  inclusionLow::Vector{Bool} = [false for i=1:nx]
+  eD::Int64 = 0
   exclusion::Bool = false
   Iflag::Bool = false
   Eflag::Bool = false
   eDflag::Bool = false
 
   # Initializes storage parameters
-  X = copy(X0)
-  Xi = copy(X0)
-  N = copy(X)
-  x_mid = mid.(X)
-  k = 1
-  H = h(x_mid,P)
-  J = hj(X,P)
-  Y = eye(nx,nx)
+  X::Vector{Interval{Float64}} = copy(X0)
+  Xi::Vector{Interval{Float64}} = copy(X0)
+  N::Vector{Interval{Float64}} = copy(X)
+  x_mid::Vector{Float64} = mid.(X)
+  k::Int64 = 1
+  H::Vector{Interval{Float64}} = h(x_mid,P)
+  J::Array{Interval{Float64},2} = hj(X,P)
+  Y::Array{Float64,2} = eye(nx,nx)
   try
     Y = Preconditioner(hj,X,P,jac="User")
   catch
     Y = eye(nx,nx)
   end
-  B = Y*H
-  M = Y*J
+  B::Vector{Interval{Float64}} = Y*H
+  M::Array{Interval{Float64},2} = Y*J
 
   # Runs one iteration of parameteric interval NewtonGS
   for i=1:nx
@@ -227,11 +234,11 @@ implicit functions x:P->X defined by a system of equations h(z,p)=0 via
 componentwise Krawczyk.
 --------------------------------------------------------------------------------
 Inputs:
-X0:        IntervalBox{N,Float64} - Bounds for dependent variables
-P:         IntervalBox{N,Float64} - Bounds for independent variables
+X0:        Vector{Interval{Float64}} - Bounds for dependent variables
+P:         Vector{Interval{Float64}} - Bounds for independent variables
 hj:        function - Jacobian of h(x,p) with respect to x
 h:         function - Equations defining potential implicit function
-opt:       Array{Float64,1} - Containing the following options
+opt:       Vector{Any} - Containing the following options
                               opt[1] - Int64: Number of iterations
                               opt[2] - Float64: Tolerance for equality of
                                                 intervals
@@ -240,48 +247,55 @@ Iflag:     Bool - True if unique implicit function exists in box
 --------------------------------------------------------------------------------
 Returns:
 A tuple (X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh) where
-X:                IntervalBox{N,Float64} - Output interval box
+X:                Vector{Interval{Float64}} - Output interval box
 Eflag:            Bool - True if no implicit function exists in box
 Iflag:            Bool - True if unique implicit function exists in box
-inclusionLow:     Array{Bool} - Each component is true if corresponding variable
+inclusionLow:     Vector{Bool} - Each component is true if corresponding variable
                                 contracted from lower bound
-inclusionHigh:    Array{Bool} - Each component is true if corresponding variable
+inclusionHigh:    Vector{Bool} - Each component is true if corresponding variable
                                 contracted from upper bound
 --------------------------------------------------------------------------------
 """
-function PI_KrawczykCW(X0,P,hj,h,opt,Eflag,Iflag)
+function PI_KrawczykCW(X0::Vector{Interval{Float64}},
+                       P::Vector{Interval{Float64}},
+                       hj::Function,
+                       h::Function,
+                       opt::Vector{Any},
+                       Eflag::Bool,
+                       Iflag::Bool)
+
   # unpacks option file
-  kmax = opt[1]
-  etol = opt[2]
+  kmax::Int64 = opt[1]
+  etol::Int64 = opt[2]
 
   # Initializes variables
-  nx = length(X0)
-  S1::Interval = Interval(0.0)
-  S2::Interval = Interval(0.0)
-  inclusion = [false for i=1:nx]
-  inclusionHigh = [false for i=1:nx]
-  inclusionLow = [false for i=1:nx]
+  nx::Int64 = length(X0)
+  S1::Interval{Float64} = Interval(0.0)
+  S2::Interval{Float64} = Interval(0.0)
+  inclusion::Vector{Bool} = [false for i=1:nx]
+  inclusionHigh::Vector{Bool} = [false for i=1:nx]
+  inclusionLow::Vector{Bool} = [false for i=1:nx]
   exclusion::Bool = false
   Iflag::Bool = false
   Eflag::Bool = false
   eDflag::Bool = false
-  X = copy(X0)
-  Xi = copy(X)
-  N = copy(X)
-  x_mid = mid.(X)
-  k = 1
+  X::Vector{Interval{Float64}} = copy(X0)
+  Xi::Vector{Interval{Float64}} = copy(X)
+  N::Vector{Interval{Float64}} = copy(X)
+  x_mid::Vector{Float64} = mid.(X)
+  k::Int64 = 1
 
-  H = h(x_mid,P)
-  J = hj(X,P)
-  Y = eye(nx,nx)
+  H::Vector{Interval{Float64}} = h(x_mid,P)
+  J::Array{Interval{Float64},2} = hj(X,P)
+  Y::Array{Float64,2} = eye(nx,nx)
   try
     Y = Preconditioner(hj,X,P,jac="User")
   catch
     Y = Float64.(eye(nx,nx))
   end
 
-  B = Y*H
-  M = eye(nx)-Y*J
+  B::Vector{Interval{Float64}} = Y*H
+  M::Array{Interval{Float64},2} = eye(nx)-Y*J
 
   # One iteration of parametric interval Krawczyk
   for i=1:nx

@@ -24,7 +24,7 @@ function Expr_SubSymbols(expr,symdict)
       end
       return exprlist[1]
 end
-
+#=
 function GenerateJacobianX(ExprArr,SymXArr,SymPArr)
 
   # creates symbol dictionary
@@ -58,7 +58,7 @@ function GenerateJacobianX(ExprArr,SymXArr,SymPArr)
   @eval Jacob(z,p) = $dexpr_arr
   return Jacob
 end
-
+=#
 function GenerateH(ExprArr, SymXArr,SymPArr)
     # creates list of symbols
     symdict = Dict{Any,Any}()
@@ -185,7 +185,7 @@ end
 Function: Preconditioner
 --------------------------------------------------------------------------------
 Description:
-Runs Miranda's tests for exclusion of implicit function. *Implicit function
+Runs Miranda's tests for exclusion of implicit function. Implicit function
 defined by h(X,P) = 0 in (X,P) implies 0 in {h(x,p} for x in X, p in P}.
 --------------------------------------------------------------------------------
 Inputs:
