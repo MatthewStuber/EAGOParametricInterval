@@ -1,26 +1,25 @@
-__precompile__()
-
 module EAGOParametricInterval
 
-using IntervalArithmetic
-using EAGODAGContractor
+#using ForwardDiff
+#using ReverseDiff
+using Calculus
+using ValidatedNumerics
+#using EAGODAGContractor
 
 type Param_Bisect_Opts
   DAGflag::Bool
   LPflag::Bool
-  kmax_main::Int64
-  kmax_cntr::Int64
-  style::String
-  display::String
-  ptol::Float64
-  etol::Float64
-  rtol::Float64
-  DAGpass::Int64
-  p_rel_bisect::Bool
+  kmax_main
+  kmax_cntr
+  style
+  display
+  ptol
+  etol
+  rtol
+  DAGpass
+  p_rel_bisect
   DAGh
   DAGg
-  DAGgL
-  DAGgU
   DAGsym
 end
 Param_Bisect_Opts() = Param_Bisect_Opts(false, #DAGflag::Bool
@@ -36,22 +35,26 @@ Param_Bisect_Opts() = Param_Bisect_Opts(false, #DAGflag::Bool
                                         false, # p_rel_bisect
                                         [],
                                         [],
-                                        [],
-                                        [],
                                         [])
 
-include("src/Parametric_Utility.jl")
-include("src/Parametric_Test.jl")
-include("src/Parametric_Contractor.jl")
-include("src/Parametric_Contractor_Inplace.jl")
-include("src/Parametric_Bisection.jl")
-include("src/Parametric_Main.jl")
+include("lib/Parametric_Utility.jl")
+include("lib/Parametric_Test.jl")
+include("lib/Parametric_Contractor.jl")
+include("lib/Parametric_Bisection.jl")
+include("lib/Parametric_Main.jl")
 
-function __init__()
-end
+#include("lib/utility.jl")
+#include("lib/param_iter.jl")
+#include("lib/param_test.jl")
+#include("lib/param_bisect.jl")
 
-export Generalized_Param_Bisection, Param_Bisect_Opts,
-       GenerateH, setprec, PI_NewtonGS, PI_KrawczykCW,
-       PI_NewtonGS!, PI_KrawczykCW!
+# export Param_Intv_Contactor, Param_Intv_NewtonGS, Param_Intv_Newton,
+#        Param_Intv_KrawczykCW, Param_Intv_Krawczyk, GenerateJacobianX,
+#        Preconditioner, Exclusion_Test, Inclusion_Test,
+#        Param_Intv_ContactorTest, GenerateH, Generalized_Param_Bisection
+
+export Generalized_Param_Bisection, Param_Bisect_Opts, GenerateJacobianX,
+       GenerateH, setprec, Miranda, MirandaExc, partialIncTop, partialIncBot,
+       Strict_XinY, isEqual, extDivide, extProcess, MC_NewtonGS, MC_KrawczykCW
 
 end

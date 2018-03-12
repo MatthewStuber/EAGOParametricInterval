@@ -24,7 +24,7 @@ function Expr_SubSymbols(expr,symdict)
       end
       return exprlist[1]
 end
-#=
+
 function GenerateJacobianX(ExprArr,SymXArr,SymPArr)
 
   # creates symbol dictionary
@@ -58,7 +58,7 @@ function GenerateJacobianX(ExprArr,SymXArr,SymPArr)
   @eval Jacob(z,p) = $dexpr_arr
   return Jacob
 end
-=#
+
 function GenerateH(ExprArr, SymXArr,SymPArr)
     # creates list of symbols
     symdict = Dict{Any,Any}()
@@ -144,12 +144,18 @@ function extProcess(N,X,Mii,S1,S2,B,rtol)
   IML = Interval(0.0)
   IMR = Interval(0.0)
   M = (B+S1+S2)+Interval(-rtol,rtol)
+  #println("extP M: ", M)
   if (M.lo<=0 || M.hi>=0)
+    #println("ran pre-case")
     N = Interval(-Inf,Inf)
     return 0, N, Ntemp
   end
   if (v == 1)
+    #println("ran v == 1 ")
     k,IML,IMR = extDivide(Mii,IML,IMR)
+    #println("k: ", k)
+    #println("IML: ", IML)
+    #println("IMR: ", IMR)
     if (k == 1)
       N = mid(X)-M*IML
       return 0, N, Ntemp
@@ -174,33 +180,17 @@ function extProcess(N,X,Mii,S1,S2,B,rtol)
       end
     end
   else
+    #println("ran other case")
     N = Interval(-Inf,Inf)
     return 0, N, Ntemp
   end
 end
 
-
-"""
---------------------------------------------------------------------------------
-Function: Preconditioner
---------------------------------------------------------------------------------
-Description:
-Runs Miranda's tests for exclusion of implicit function. Implicit function
-defined by h(X,P) = 0 in (X,P) implies 0 in {h(x,p} for x in X, p in P}.
---------------------------------------------------------------------------------
-Inputs:
-h:         function - Equations defining potential implicit function
-X:         IntervalBox{N,Float64} - Bounds for dependent variables
-P:         IntervalBox{N,Float64} - Bounds for independent variables
-jac="User"
---------------------------------------------------------------------------------
-Returns:
-Preconditioning matrix.
---------------------------------------------------------------------------------
-"""
 function Preconditioner(h,X,P;jac="User")
   J = h(X,P)
+  #println("J:   ",J)
   if (length(X)>1)
+    #println("mid.(J)", mid.(J))
     Y = inv(mid.(J))
   else
     Y = 1.0/(mid(J[1]))
