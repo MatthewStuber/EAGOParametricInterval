@@ -1,3 +1,30 @@
+# Current version has flaws since update to methods will fixed in future
+#=
+"""
+--------------------------------------------------------------------------------
+Function: Generalized_Param_Bisection
+--------------------------------------------------------------------------------
+Description:
+Uses the interval arithmetic presented in ValidatedNumerics to bound unique
+implicit functions x:P->X defined by a system of equations h(z,p)=0 via
+Gauss-Siedel Newton.
+--------------------------------------------------------------------------------
+Inputs:
+* Xin:       Vector{Interval{Float64}} - Bounds for dependent variables
+* Pin:       Vector{Interval{Float64}} - Bounds for independent variables
+* h:         function - Equations defining potential implicit function
+* hj:        function - Jacobian of h(x,p) with respect to x
+* opt:       Param_Bisect_Opts - Parametric Bisection Options
+--------------------------------------------------------------------------------
+Returns:
+A tuple (sol_set, ind_set, NIT, hist) where
+* sol_set:     Array - Interval boxes known to contain unique implicit function
+* ind_set:     Array - Interval boxes known to contain unique implicit function
+* NIT:         Int64 - Final iteration number
+* hist:        Array - Storage object with info on problem solution history
+--------------------------------------------------------------------------------
+"""
+#=
 function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
 
   # unpacks options for general bisection
@@ -13,7 +40,7 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
   pbisect = opt.p_rel_bisect
   Pstart = copy(Pin)
   bp = 1
-  #=
+
   if (DAGflag)
     println("started generating DAG parameters")
     DAGr = opt.DAGpass
@@ -24,7 +51,7 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
     DAGparam = Contractor_Params(DAGh,DAGg,DAGpack,DAGsym)
     println("generated DAG parameters")
   end
-=#
+
   inclusionHigh = [false for i=1:length(Xin)]
   inclusionLow = [false for i=1:length(Xin)]
   opt = [max_iter_cntr,etol,rtol,style]
@@ -64,7 +91,7 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
     Xw = copy(cnode[1])
     X0 = copy(cnode[1])
     Pw = copy(cnode[2])
-    #println("Current Node (X,P): ", Xw, " ",Pw)
+    println("Current Node (X,P): ", Xw, " ",Pw)
 
     #### Check for exclusion via Miranda's Test ####
     Eflag = MirandaExc(h,Xw,Pw,Eflag)
@@ -97,32 +124,32 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
           Pw[count] = DAGpack[i]
           count += 1
         end
-        #println("ran DAG contractor")
       end
-      =#
+
+      println("ran DAG contractor")
     end
 
     if (~Eflag)
-      println("parametric iterations place #1")
+      #println("parametric iterations start")
       if (style == "NewtonGS")
-        Xw,Xw2,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh = MC_NewtonGS(Xw,Pw,hj,h,opt,Eflag,Iflag,eDflag)
-      #  println("Xw:   ", Xw)
-      #  println("Xw2:   ", Xw2)
+        Xw,Xw2,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh = PI_NewtonGS(Xw,Pw,hj,h,opt,Eflag,Iflag,eDflag)
+        #println("Xw:   ", Xw)
+        #println("Xw2:   ", Xw2)
         #println("Eflag:   ", Eflag)
-      #  println("Iflag:   ", Iflag)
-      #  println("eDflag:   ", eDflag)
-      #  println("inclusionLow:   ", inclusionLow)
-      #  println("inclusionHigh:   ", inclusionHigh)
+        #println("Iflag:   ", Iflag)
+        #println("eDflag:   ", eDflag)
+        #println("inclusionLow:   ", inclusionLow)
+        #println("inclusionHigh:   ", inclusionHigh)
         if eDflag
           push!(stack,[Xw2,Pw])
         end
       end
       if (style == "KrawczykCW")
-        #println("Xw Initial: ",Xw)
-        Xw,Eflag,Iflag,inclusionLow,inclusionHigh =  MC_KrawczykCW(Xw,Pw,hj,h,opt,Eflag,Iflag)
-        #println("Xw Final: ",Xw)
+      #  println("Xw Initial: ",Xw)
+        Xw,Eflag,Iflag,inclusionLow,inclusionHigh =  PI_KrawczykCW(Xw,Pw,hj,h,opt,Eflag,Iflag)
+      #  println("Xw Final: ",Xw)
       end
-    #  println("eDflag: ", eDflag)
+      #println("eDflag: ", eDflag)
     #  println("Eflag: ", Eflag)
       #println("Iflag: ", Iflag)
     #  println("PIflag: ", PIflag)
@@ -133,18 +160,23 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
       #println("(~PIflag || PIcert): ", (~PIflag || PIcert))
     #  println("(~Iflag && (~PIflag || PIcert)): ", (~Iflag && (~PIflag || PIcert)))
 
-      println("start boundary test #1")
+      println("start boundary test:")
       if (Eflag==true)
         disp = 2
-        #println("trace 3")
         NPINMEX += 1
       elseif (~Iflag && (~PIflag || PIcert))
         PIcert,PIflag,Iflag,Eflag = BoundaryTest(h,hj,X0,Xw,Pw,opt,PIcert,PIflag,
                                                  Iflag,Eflag,inclusionLow,inclusionHigh)
+        println("performed boundary test")
+        println("boundary test results")
+        println("Eflag: ", Eflag)
+        println("Iflag: ", Iflag)
+        println("PIflag: ", PIflag)
+        println("PIcert: ", PIcert)
       end
 
-      println("re-refine #1")
       if (Iflag)
+        println("start re-refine")
         if (style == "NewtonGS")
           #println("trace 4")
           Xw,Xw2,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh =  MC_NewtonGS(Xw,Pw,hj,h,opt,Eflag,Iflag,eDflag)
@@ -166,20 +198,20 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
         push!(sol_set,[Xw,Pw])
         NS += 1
       elseif (~Eflag)
-        #println("trace 5 - Bisection Start")
+        println("start XP bisection")
         NextNode = copy(Xw)
         NextNodeP =  copy(Pw)
         Ptemp =  copy(Pw)
         PIflag = false
         bp,CNodeX,CNodeP,NNodeX,NNodeP,Ptemp = XP_Bisection(h,hj,Xw,Pw,NextNode,NextNodeP,Ptemp,
                                                             PIflag,Iflag,Eflag,ptol,pbisect,Pstart)
-        #println("trace 5 - Bisection Results")
-        #println("bp:  ", bp)
-        #println("CNodeX:  ", CNodeX)
-        #println("CNodeP:  ", CNodeP)
-        #println("NNodeX:  ", NNodeX)
-        #println("NNodeP:  ", NNodeP)
-        #println("Ptemp:  ", Ptemp)
+        println("trace 5 - Bisection Results")
+        println("bp:  ", bp)
+        println("CNodeX:  ", CNodeX)
+        println("CNodeP:  ", CNodeP)
+        println("NNodeX:  ", NNodeX)
+        println("NNodeP:  ", NNodeP)
+        println("Ptemp:  ", Ptemp)
         if (bp == 2)
           disp = 4
           push!(stack,[CNodeX,CNodeP],[CNodeX,NNodeP])
@@ -202,3 +234,4 @@ function Generalized_Param_Bisection(Xin,Pin,h,hj,opt)
   #println("trace end")
   return sol_set, ind_set, NIT,hist
 end
+=#

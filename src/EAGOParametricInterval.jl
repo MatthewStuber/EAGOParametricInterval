@@ -1,10 +1,6 @@
 module EAGOParametricInterval
 
-#using ForwardDiff
-#using ReverseDiff
-using Calculus
-using ValidatedNumerics
-#using EAGODAGContractor
+using IntervalArithmetic
 
 type Param_Bisect_Opts
   DAGflag::Bool
@@ -37,24 +33,20 @@ Param_Bisect_Opts() = Param_Bisect_Opts(false, #DAGflag::Bool
                                         [],
                                         [])
 
+include("lib/Sparse_Conditioner.jl")
 include("lib/Parametric_Utility.jl")
-include("lib/Parametric_Test.jl")
 include("lib/Parametric_Contractor.jl")
-include("lib/Parametric_Bisection.jl")
-include("lib/Parametric_Main.jl")
+#include("lib/Parametric_Test.jl")
+#include("lib/Parametric_Bisection.jl") # Used for generalized bisection
+#include("lib/Parametric_Main.jl")
 
-#include("lib/utility.jl")
-#include("lib/param_iter.jl")
-#include("lib/param_test.jl")
-#include("lib/param_bisect.jl")
+#=
+export Param_Bisect_Opts,setprec, Miranda, MirandaExc, partialIncTop,
+       partialIncBot, Strict_XinY, isEqual, extDivide, extProcess,
+=#
 
-# export Param_Intv_Contactor, Param_Intv_NewtonGS, Param_Intv_Newton,
-#        Param_Intv_KrawczykCW, Param_Intv_Krawczyk, GenerateJacobianX,
-#        Preconditioner, Exclusion_Test, Inclusion_Test,
-#        Param_Intv_ContactorTest, GenerateH, Generalized_Param_Bisection
-
-export Generalized_Param_Bisection, Param_Bisect_Opts, GenerateJacobianX,
-       GenerateH, setprec, Miranda, MirandaExc, partialIncTop, partialIncBot,
-       Strict_XinY, isEqual, extDivide, extProcess, MC_NewtonGS, MC_KrawczykCW
+export  PI_NewtonGS, PI_KrawczykCW, 
+        PIn_NewtonGS, PIn_KrawczykCW,
+        Sparse_Precondition!, SparseInSto
 
 end

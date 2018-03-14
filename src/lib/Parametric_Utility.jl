@@ -1,3 +1,6 @@
+# Will update interface utilities with upgrade to Generalized parametric bisection
+
+#=
 function kdel(i,j)
   i == j ? 1.0 : 0.0
 end
@@ -89,9 +92,15 @@ function Unpack(stack)
   cnode = pop!(stack)
   return cnode[1],cnode[2]
 end
+=#
 
-function Strict_XinY(X,Y)
-  k = true
+"""
+    Strict_XinY(X::Vector{Interval{T}},Y::Vector{Interval{T}})
+
+Returns true if X is strictly in Y (X.lo>Y.lo && X.hi<Y.hi).
+"""
+function Strict_XinY(X::Vector{Interval{T}},Y::Vector{Interval{T}}) where {T<:AbstractFloat}
+  k::Bool = true
   for i=1:length(X)
     if ((X[i].lo<=Y[i].lo)||
         (X[i].hi>=Y[i].hi))
@@ -101,12 +110,28 @@ function Strict_XinY(X,Y)
   return k
 end
 
-# Tests for equality to within a tolerance atol
-function isEqual(X1,X2,atol)
+"""
+    Strict_XinY(X::Interval{T},Y::Interval{T})
+
+Returns true if X is strictly in Y (X.lo>Y.lo && X.hi<Y.hi).
+"""
+function Strict_XinY(X::Interval{T},Y::Interval{T}) where {T<:AbstractFloat}
+  (X.lo<=Y.lo) && return false
+  (X.hi>=Y.hi) && return false
+  return true
+end
+
+"""
+    isEqual(X1::Vector{Interval{T}},X2::Vector{Interval{T}},atol::Float64)
+
+Returns true if X1 and X2 are equal to within tolerance atol in all dimensions.
+"""
+function isEqual(X1::Vector{Interval{T}},X2::Vector{Interval{T}},
+                 atol::Float64) where {T<:AbstractFloat}
   out::Bool = true
   for i=1:length(X1)
-    if (abs(X1[i].lo-X2[i].lo)<atol ||
-        abs(X1[i].hi-X2[i].hi)<atol )
+    if (abs(X1[i].lo-X2[i].lo)>=atol ||
+        abs(X1[i].hi-X2[i].hi)>=atol )
         out = false
         break
     end
@@ -114,8 +139,12 @@ function isEqual(X1,X2,atol)
   return out
 end
 
-# Extended Interval Arithmetic
-function extDivide(A,B,C)
+"""
+    extDivide(A::Interval{T},B::Interval{T},C::Interval{T})
+
+Subfunction to generate output for extended division.
+"""
+function extDivide(A::Interval{T},B::Interval{T},C::Interval{T}) where {T<:AbstractFloat}
   if ((A.lo == -0.0) && (A.hi == 0.0))
     B = Interval(-Inf,Inf)
     C = B
@@ -137,25 +166,26 @@ function extDivide(A,B,C)
   return -1,B,C
 end
 
-# Error & Case Handling for Extended IA in NewtonGS
-function extProcess(N,X,Mii,S1,S2,B,rtol)
+"""
+    extProcess(N::Interval{T},X::Interval{T},Mii::Interval{T},
+                    S1::Interval{T},S2::Interval{T},B::Interval{T},rtol::Float64)
+
+Generates output boxes for extended division and flag.
+"""
+# Error & Case Handling for Extended IA in NewtonGS (CHECKED C++)
+function extProcess(N::Interval{T},X::Interval{T},Mii::Interval{T},
+                    S1::Interval{T},S2::Interval{T},B::Interval{T},rtol::Float64) where {T<:AbstractFloat}
   v = 1
-  Ntemp = copy(N)
-  IML = Interval(0.0)
-  IMR = Interval(0.0)
-  M = (B+S1+S2)+Interval(-rtol,rtol)
-  #println("extP M: ", M)
+  Ntemp::Interval{T} = copy(N)
+  IML::Interval{T} = Interval(0.0)
+  IMR::Interval{T} = Interval(0.0)
+  M::Interval{T} = (B+S1+S2)+Interval(-rtol,rtol)
   if (M.lo<=0 || M.hi>=0)
-    #println("ran pre-case")
     N = Interval(-Inf,Inf)
     return 0, N, Ntemp
   end
   if (v == 1)
-    #println("ran v == 1 ")
     k,IML,IMR = extDivide(Mii,IML,IMR)
-    #println("k: ", k)
-    #println("IML: ", IML)
-    #println("IMR: ", IMR)
     if (k == 1)
       N = mid(X)-M*IML
       return 0, N, Ntemp
@@ -180,20 +210,7 @@ function extProcess(N,X,Mii,S1,S2,B,rtol)
       end
     end
   else
-    #println("ran other case")
     N = Interval(-Inf,Inf)
     return 0, N, Ntemp
   end
-end
-
-function Preconditioner(h,X,P;jac="User")
-  J = h(X,P)
-  #println("J:   ",J)
-  if (length(X)>1)
-    #println("mid.(J)", mid.(J))
-    Y = inv(mid.(J))
-  else
-    Y = 1.0/(mid(J[1]))
-  end
-  return Y
 end

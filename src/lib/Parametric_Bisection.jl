@@ -1,3 +1,100 @@
+#=
+"""
+--------------------------------------------------------------------------------
+Function: XP_Bisection
+--------------------------------------------------------------------------------
+Description: Bisects box in either X or P dimension.
+--------------------------------------------------------------------------------
+Inputs:
+h           function - h(z,p)
+hj          function - Jacobian of h(z,p) w.r.t. z
+CurrNode    Vector{Interval{Float64}} - Current X node
+P           Vector{Interval{Float64}} - Current P node
+NextNode    Vector{Interval{Float64}} - New X node
+NextNodeP   Vector{Interval{Float64}} - New P node 1
+Ptemp       Vector{Interval{Float64}} - New P node 2
+PIflag      Bool - Partial Inclusion Flag
+Iflag       Bool - Inclusion flag
+Eflag       Bool - Exclusion flag
+ptol        Float64 - tolerance for P dimension size
+pbisect     Bool - bisect based on relative width?
+Pstart      Vector{Interval{Float64}} - initial P size
+--------------------------------------------------------------------------------
+Returns:
+bp          Int64 - Cut type flag
+CurrNode    Vector{Interval{Float64}} - Current X node
+P           Vector{Interval{Float64}} - Current P node
+NextNode    Vector{Interval{Float64}} - New X node
+NextNodeP   Vector{Interval{Float64}} - New P node 1
+Ptemp       Vector{Interval{Float64}} - New P node 2
+--------------------------------------------------------------------------------
+"""
+
+"""
+--------------------------------------------------------------------------------
+Function: bisectDirX
+--------------------------------------------------------------------------------
+Description: Determine direction and position of cut in X dimension.
+--------------------------------------------------------------------------------
+Inputs:
+h        function - h(z,p)
+X        Vector{Interval{Float64}} - for state variables
+P        Vector{Interval{Float64}} - for decision variables
+x        Currently Unused
+PIFlag   Bool - Flag for partial inclusion.
+--------------------------------------------------------------------------------
+Returns:
+jmax            Int64 - The dimension to cut X in
+xCut            Float64 - Cut value for X
+piflagtemp      Bool - Partial Inclusion Flag
+--------------------------------------------------------------------------------
+"""
+
+"""
+--------------------------------------------------------------------------------
+Function: bisectDirP
+--------------------------------------------------------------------------------
+Description: Determines the direction to branch P in based on absolute/relative
+width and tolerance for P dimension size.
+--------------------------------------------------------------------------------
+Inputs:
+P         Vector{Interval{Float64}} - P Box to bisect
+ptol      Float64 - tolerance for P dimension size
+pbisect   Bool - bisect based on relative width?
+Pstart    Vector{Interval{Float64}} - initial P size
+--------------------------------------------------------------------------------
+Returns:
+jmax - The dimension to branch P in.
+--------------------------------------------------------------------------------
+"""
+
+"""
+--------------------------------------------------------------------------------
+Function:  partIncProc
+--------------------------------------------------------------------------------
+Description:
+Partial inclusion check (uses Newton type operator test with Miranda)
+--------------------------------------------------------------------------------
+Inputs:
+h         function - h(z,p)
+hj        function - Jacobian of h(z,p) w.r.t. z
+X0        Vector{Interval{Float64}} - state variables
+P         Vector{Interval{Float64}} - decision variables
+exDim     Int64 - Dimension flag
+Iflag     Bool - Inclusion flag
+Eflag     Bool - Exclusion flag
+PIflag    Bool - Partial Inclusion Flag
+--------------------------------------------------------------------------------
+Returns:
+X         IntervalBox - State variables
+Iflag     Bool - Inclusion flag
+Eflag     Bool - Exclusion flag
+PIflag    Bool - Partial Inclusion Flag
+--------------------------------------------------------------------------------
+"""
+=#
+
+
 function XP_Bisection(h,hj,CurrNode,P,NextNode,NextNodeP,Ptemp,PIflag,Iflag,Eflag,ptol,pbisect,Pstart)
   #println("CurrNode Top: ", CurrNode)
   pPart = false
