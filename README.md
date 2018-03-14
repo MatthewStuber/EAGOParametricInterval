@@ -10,7 +10,7 @@ julia> Pkg.add("EAGOParametricInterval")
 ## Capabilities
 
 **EAGOParametricInterval.jl** provides methods for performing parametric interval calculations such as (Parametric Interval Newton/Krawczyk) as well as a series of tests to verify the (non)existence of unique enclosed functions. This routine
-are used extensively in the `EAGO.jl`(https://github.com/MatthewStuber/EAGO.jl) package solver
+are used extensively in the [`EAGO.jl`](https://github.com/MatthewStuber/EAGO.jl) package solver
 
 Currently, it exports four types of contractor functions for use. This contractors
 include embedded test for the guaranteed existence or non-existence. Please see the example.jl file for usage cases. 
@@ -25,9 +25,9 @@ performance. Namely, row handling for the sparse LU factorization for interval
 midpoint computation.
 
 ## Related Packages
-- **EAGO.jl**(https://github.com/MatthewStuber/EAGO.jl): A package containing global and robust solvers based mainly on McCormick relaxations.
+- [**EAGO.jl**](https://github.com/MatthewStuber/EAGO.jl): A package containing global and robust solvers based mainly on McCormick relaxations.
 This package supports a JuMP and MathProgBase interface.
-- **IntervalRootFinding.jl**(https://github.com/JuliaIntervals/IntervalRootFinding.jl): Provides root finding routines using Interval Newton
+- [**IntervalRootFinding.jl**](https://github.com/JuliaIntervals/IntervalRootFinding.jl): Provides root finding routines using Interval Newton
 and Krawczyk methods but don't include parametric method, methods with embedded test,
 or handling of large sparse matrices for preconditioner calculation.
 
