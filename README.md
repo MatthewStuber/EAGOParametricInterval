@@ -3,7 +3,7 @@ A library for bounding functions via parametric interval methods
 
 ## Authors
 
-[Matthew Wilhelm](httppsor.uconn.eduour-team), Department of Chemical and Biomolecular Engineering,  University of Connecticut (UCONN)
+[Matthew Wilhelm](https://psor.uconn.edu/our-team/), Department of Chemical and Biomolecular Engineering,  University of Connecticut (UCONN)
 
 ## Installation
 
