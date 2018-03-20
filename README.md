@@ -1,4 +1,4 @@
-# EAGOParametricInterval
+# EAGOParametricInterval.jl
 A library for bounding functions via parametric interval methods
 
 [![Build Status](https://travis-ci.org/MatthewStuber/EAGOParametricInterval.jl.svg?branch=master)](https://travis-ci.org/MatthewStuber/EAGOParametricInterval.jl)
