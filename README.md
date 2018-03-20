@@ -1,6 +1,13 @@
 # EAGOParametricInterval
 A library for bounding functions via parametric interval methods
 
+[![Build Status](https://travis-ci.org/MatthewStuber/EAGOParametricInterval.jl.svg?branch=master)](https://travis-ci.org/MatthewStuber/EAGOParametricInterval.jl)
+[![Coverage Status](https://coveralls.io/repos/MatthewStuber/EAGOParametricInterval.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/MatthewStuber/EAGOParametricInterval.jl?branch=master)
+[![codecov.io](http://codecov.io/github/MatthewStuber/EAGOParametricInterval.jl/coverage.svg?branch=master)](http://codecov.io/github/MatthewStuber/EAGOParametricInterval.jl?branch=master)
+
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://MatthewStuber.github.io/EAGO.jl/stable)
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://MatthewStuber.github.io/EAGO.jl/latest)
+
 ## Authors
 
 [Matthew Wilhelm](https://psor.uconn.edu/our-team/), Department of Chemical and Biomolecular Engineering,  University of Connecticut (UCONN)
