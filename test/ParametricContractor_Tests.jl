@@ -33,4 +33,30 @@ krawczykCW1 = PI_KrawczykCW(Z1,P1,hj1,h1,opt1,Eflag,Iflag)
 @test -1E-4 <= krawczykCW1[1][2].lo - 0.0473789 <= 1E-4
 @test -1E-4 <= krawczykCW1[1][2].hi - 0.208486 <= 1E-4
 
+function h1!(h,z,p)
+   h[1] = z[1]^2+z[2]^2+p[1]*z[1]+4
+   h[2] = z[1]+p[2]*z[2]
+end
+
+function hj1!(h,z,p)
+   h[1,1] = (2*z[1]+p[1])
+   h[1,2] = 2*z[2]
+   h[2,1] = 1
+   h[2,2] = p[2]
+end
+
+Eflag = false
+Iflag = false
+eDflag = false
+newtonGS2 = PIn_NewtonGS(Z1,P1,hj1!,h1!,opt1,Eflag,Iflag,eDflag)
+krawczykCW2 = PIn_KrawczykCW(Z1,P1,hj1!,h1!,opt1,Eflag,Iflag)
+
+@test -1E-4 <= newtonGS2[1][1].lo + 1.04243 <= 1E-4
+@test -1E-4 <= newtonGS2[1][1].hi + 0.492759 <= 1E-4
+@test -1E-4 <= newtonGS2[1][2].lo - 0.0473789 <= 1E-4
+@test -1E-4 <= newtonGS2[1][2].hi - 0.208486 <= 1E-4
+@test -1E-4 <= krawczykCW2[1][1].lo + 1.04243 <= 1E-4
+@test -1E-4 <= krawczykCW2[1][1].hi + 0.492759 <= 1E-4
+@test -1E-4 <= krawczykCW2[1][2].lo - 0.0473789 <= 1E-4
+@test -1E-4 <= krawczykCW2[1][2].hi - 0.208486 <= 1E-4
 end
