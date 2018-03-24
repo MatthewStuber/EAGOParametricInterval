@@ -94,7 +94,7 @@ PIflag    Bool - Partial Inclusion Flag
 """
 =#
 
-
+#=
 function XP_Bisection(h,hj,CurrNode,P,NextNode,NextNodeP,Ptemp,PIflag,Iflag,Eflag,ptol,pbisect,Pstart)
   #println("CurrNode Top: ", CurrNode)
   pPart = false
@@ -277,7 +277,7 @@ end
 
 # Unfinish bisection based on spectral radius
 function branchP(X,P,jmax,pCutL,pCutR)
-  #=
+
   Plocal = P
   maxD = 0.0
   try
@@ -288,7 +288,7 @@ function branchP(X,P,jmax,pCutL,pCutR)
     fpsecR(Xf,Pf,rho)
   catch
   end
-  =#
+
 end
 
 function partIncProc(h,hj,X0,P,exDim,Iflag,Eflag,PIflag)
@@ -384,3 +384,4 @@ function partIncProc(h,hj,X0,P,exDim,Iflag,Eflag,PIflag)
 
   return X,Iflag,Eflag,PIflag #FIX ME
 end
+=#

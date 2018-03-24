@@ -60,7 +60,7 @@ function UBD_func(i)
           return YU[i]
 end
 
-P2 = [Interval(5.0,7.0),Interval(5.0,7.0)]
+P2 = [Interval(1800,2200),Interval(900,1100)]
 Z2 = [Interval(-30, 30),Interval(-30, 30),Interval(-30, 30)]
 function h2(x,p)
        return [(3.25-x[1])/p[1]-x[3]; x[1]/p[2]-x[3]; x[2]-(x[1]^2)/(1+x[1]^2)]
@@ -75,9 +75,11 @@ Eflag = false
 Iflag = false
 eDflag = false
 newtonGS2 = PI_NewtonGS(Z2,P2,hj2,h2,opt1,Eflag,Iflag,eDflag)
+P2 = [Interval(1800,2200),Interval(900,1100)]
+Z2 = [Interval(-30, 30),Interval(-30, 30),Interval(-30, 30)]
 Eflag = false
 Iflag = false
-krawczykCW1 = PI_KrawczykCW(Z2,P2,hj2,h2,opt1,Eflag,Iflag)
+krawczykCW2 = PI_KrawczykCW(Z2,P2,hj2,h2,opt1,Eflag,Iflag)
 
 function h2!(hout,x,p)
        hout[1] = (3.25-x[1])/p[1]-x[3]
@@ -95,11 +97,14 @@ function hj2!(hout,x,p)
        hout[3,2] = 1
        hout[3,3] = 0
 end
-
+P2 = [Interval(1800,2200),Interval(900,1100)]
+Z2 = [Interval(-30, 30),Interval(-30, 30),Interval(-30, 30)]
 Eflag = false
 Iflag = false
 eDflag = false
-InnewtonGS1 = PIn_NewtonGS(Z2,P2,hj2!,h2!,opt1,Eflag,Iflag,eDflag)
+InnewtonGS2 = PIn_NewtonGS(Z2,P2,hj2!,h2!,opt1,Eflag,Iflag,eDflag)
+P2 = [Interval(1800,2200),Interval(900,1100)]
+Z2 = [Interval(-30, 30),Interval(-30, 30),Interval(-30, 30)]
 Eflag = false
 Iflag = false
-InkrawczykCW1 = PIn_KrawczykCW(Z2,P2,hj2!,h2!,opt1,Eflag,Iflag)
+InkrawczykCW2 = PIn_KrawczykCW(Z2,P2,hj2!,h2!,opt1,Eflag,Iflag)

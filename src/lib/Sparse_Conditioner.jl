@@ -26,7 +26,7 @@ function Preconditioner(h,X,P;jac="User")
     #println("mid.(J)", mid.(J))
     Y = inv(mid.(J))
   else
-    Y = 1.0/(mid(J[1]))
+    Y = [1.0/(mid(J[1]))]
   end
   return Y
 end
