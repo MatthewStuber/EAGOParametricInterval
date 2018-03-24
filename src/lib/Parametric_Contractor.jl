@@ -52,11 +52,17 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   N::Vector{Interval{T}} = copy(X)
   x_mid::Vector{T} = mid.(X)
   k::Int64 = 1
-  H::Vector{Interval{T}} = h(x_mid,P)
-  J::Array{Interval{T},2} = hj(X,P)
-  Y::Array{T,2} = Preconditioner(hj,X,P,jac="User")
-  B::Vector{Interval{T}} = Y*H
-  M::Array{Interval{T},2} = Y*J
+  H::Union{Array{Interval{T},2},Vector{Interval{T}}} = h(x_mid,P)
+  J::Union{Array{Interval{T},2},Vector{Interval{T}}} = hj(X,P)
+  Y::Union{Array{T,2},Vector{T}} = Preconditioner(hj,X,P,jac="User")
+  if (nx == 1)
+    B::Vector{Interval{T}} = Y.*H
+    M::Union{Array{Interval{T},2},Vector{Interval{T}}} = eye(nx)-Y.*J
+  else
+    B = Y*H
+    M = eye(nx)-Y*J
+  end
+
   for i=1:nx
     S1 = Interval(0.0)
     S2 = Interval(0.0)
@@ -124,8 +130,13 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     H = h(x_mid,P)
     J = hj(X,P)
     Y = Preconditioner(hj,X,P,jac="User")
-    B = Y*H
-    M = Y*J
+    if (nx == 1)
+      B = Y.*H
+      M = eye(nx)-Y.*J
+    else
+      B = Y*H
+      M = eye(nx)-Y*J
+    end
 
     for i=1:nx
       S1 = Interval(0.0)
@@ -244,11 +255,19 @@ function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   x_mid::Vector{T} = mid.(X)
   k::Int64 = 1
 
-  H::Vector{Interval{T}} = h(x_mid,P)
-  J::Array{Interval{T},2} = hj(X,P)
-  Y::Array{T,2} = Preconditioner(hj,X,P,jac="User")
-  B::Vector{Interval{T}} = Y*H
-  M::Array{Interval{T},2} = eye(nx)-Y*J
+  H::Union{Array{Interval{T},2},Vector{Interval{T}}} = h(x_mid,P)
+  J::Union{Array{Interval{T},2},Vector{Interval{T}}} = hj(X,P)
+  Y::Union{Array{T,2},Vector{T}} = Preconditioner(hj,X,P,jac="User")
+  if (nx == 1)
+    println("ran to me 1")
+    B::Vector{Interval{T}} = Y.*H
+    M::Union{Array{Interval{T},2},Vector{Interval{T}}} = eye(nx)-Y.*J
+  else
+    println("ran to me 2")
+    B = Y*H
+    M = eye(nx)-Y*J
+  end
+  println("ran to me 3")
 
   for i=1:nx
     S1 = Interval(0.0)
@@ -304,8 +323,13 @@ function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     H = h(x_mid,P)
     J = hj(X,P)
     Y = Preconditioner(hj,X,P,jac="User")
-    B = Y*H
-    M = eye(nx)-Y*J
+    if (nx == 1)
+      B = Y.*H
+      M = eye(nx)-Y.*J
+    else
+      B = Y*H
+      M = eye(nx)-Y*J
+    end
 
     for i=1:nx
       S1 = Interval(0.0)
