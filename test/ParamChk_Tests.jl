@@ -18,16 +18,14 @@ flag3 = EAGOParametricInterval.Strict_XinY(X3,Y)
 @test flag3 == false
 
 # Checks extended division routine
-B = Interval(1,2)
-C = Interval(3,4)
 A1 = Interval(0)
 A2 = Interval(0,3)
 A3 = Interval(-2,0)
 A4 = Interval(-3,2)
-ind1,B1,C1 = EAGOParametricInterval.extDivide(A1,B,C)
-ind2,B2,C2 = EAGOParametricInterval.extDivide(A2,B,C)
-ind3,B3,C3 = EAGOParametricInterval.extDivide(A3,B,C)
-ind4,B4,C4 = EAGOParametricInterval.extDivide(A4,B,C)
+ind1,B1,C1 = EAGOParametricInterval.extDivide(A1)
+ind2,B2,C2 = EAGOParametricInterval.extDivide(A2)
+ind3,B3,C3 = EAGOParametricInterval.extDivide(A3)
+ind4,B4,C4 = EAGOParametricInterval.extDivide(A4)
 @test ind1 == 0
 @test ind2 == 1
 @test ind3 == 2
@@ -43,15 +41,58 @@ ind4,B4,C4 = EAGOParametricInterval.extDivide(A4,B,C)
 @test C3 == Interval(-Inf,-Inf)
 @test C4 == Interval(0.5,Inf)
 
-#=
-N =
-X =
-Mii =
-S1 =
-S2 =
-B =
+param = EAGOParametricInterval.Param_Bisect_Opts()
+@test param.DAGflag == false
+
+N =  Interval(-5,5)
+X = Interval(-5,5)
+Mii = Interval(-5,5)
+S1 = Interval(-5,5)
+S2 = Interval(-5,5)
+B = Interval(-5,5)
 rtol = 1E-4
-indx1,box1,box2 = extProcess(N,X,Mii,S1,S2,B,rtol)
-=#
+indx1,box11,box12 = EAGOParametricInterval.extProcess(N,X,Mii,S1,S2,B,rtol)
+Miib = Interval(0,5)
+S1b = Interval(1,5)
+S2b = Interval(1,5)
+Bb = Interval(1,5)
+indx2,box21,box22 = EAGOParametricInterval.extProcess(N,X,Miib,S1b,S2b,Bb,rtol)
+Miic = Interval(-5,0)
+S1c = Interval(1,5)
+S2c = Interval(1,5)
+Bc = Interval(1,5)
+indx3,box31,box32 = EAGOParametricInterval.extProcess(N,X,Miic,S1c,S2c,Bc,rtol)
+Miia = Interval(1,5)
+S1a = Interval(1,5)
+S2a = Interval(1,5)
+Ba = Interval(1,5)
+indx6,box61,box62 = EAGOParametricInterval.extProcess(N,X,Miia,S1a,S2a,Ba,rtol)
+Miid = Interval(0,0)
+S1d = Interval(1,5)
+S2d = Interval(1,5)
+Bd = Interval(1,5)
+indx8,box81,box82 = EAGOParametricInterval.extProcess(N,X,Miid,S1d,S2d,Bd,rtol)
+
+@test indx1 == 0
+@test box11 == Interval(-Inf,Inf)
+@test box12 == Interval(-5,5)
+
+@test indx2 == 0
+@test box21.hi > -Inf
+@test box22 == Interval(-5,5)
+
+@test indx3 == 0
+@test box31.lo < Inf
+@test box32 == Interval(-5,5)
+
+@test indx6 == 1
+@test -15.0002 - 1E-4 <= box61.lo <= -15.0002 + 1E-4
+@test box62.lo == -Inf
+@test box61.hi == Inf
+@test -0.599979 - 1E-4 <= box62.hi <= -0.599979 + 1E-4
+
+@test indx8 == 0
+@test box81 == Interval(-5,5)
+@test box82 == Interval(-5,5)
 
 end

@@ -1,3 +1,4 @@
+#=
 """
     Miranda(h::Function,X::Vector{Interval{T}},P::Vector{Interval{T}})
 
@@ -18,8 +19,8 @@ function Miranda(h::Function,X::Vector{Interval{T}},P::Vector{Interval{T}}) wher
   i = -1
   return i
 end
-
-
+=#
+#=
 """
     MirandaExc
 
@@ -42,7 +43,8 @@ function MirandaExc(h,X,P,Eflag_in)
    end
    return Eflag
 end
-
+=#
+#=
 """
 --------------------------------------------------------------------------------
 Function: partialIncTop
@@ -84,7 +86,8 @@ function partialIncTop(h,X,P,PIflag,incHigh)
   end
   return k,PIflag
 end
-
+=#
+#=
 """
 --------------------------------------------------------------------------------
 Function: partialIncBot
@@ -126,7 +129,8 @@ function partialIncBot(h,X,P,PIflag,incLow)
   end
   return k,PIflag
 end
-
+=#
+#=
 """
 --------------------------------------------------------------------------------
 Function: spectralR
@@ -158,7 +162,8 @@ function spectralR(hj,X,P,rho)
   end
   return k,eigval
 end
-
+=#
+#=
 """
 --------------------------------------------------------------------------------
 Function: BoundaryTest
@@ -214,7 +219,7 @@ function BoundaryTest(h,hj,X0,X,P,opt,PIcert,PIflag,Iflag,Eflag,inclusionLow,inc
   end
   return PIcert,PIflag,Iflag,Eflag
 end
-
+=#
 #=
 function NewBoundaryTest(Xtemp,X,P,Iflag)
   nx = length(X)

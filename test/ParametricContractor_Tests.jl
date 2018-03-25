@@ -105,7 +105,42 @@ krawczykCW4 = PIn_KrawczykCW(Z2,P2,hj2!,h2!,opt1,Eflag,Iflag)
 @test newtonGS4[3] == false
 @test newtonGS4[4] == true
 
-# Test Problem #3 Inplace
-# Test Problem #3 Out of Place
+# Test Problem #3 (Exclusion)
+Z2ex = [Interval(-30, -25)]
+Eflag = false
+Iflag = false
+eDflag = false
+newtonGS5 = PI_NewtonGS(Z2ex,P2,hj2,h2,opt1,Eflag,Iflag,eDflag)
+krawczykCW5 = PI_KrawczykCW(Z2ex,P2,hj2,h2,opt1,Eflag,Iflag)
+@test newtonGS5[3] == true
+@test krawczykCW5[2] == true
+
+Eflag = false
+Iflag = false
+eDflag = false
+newtonGS6 = PIn_NewtonGS(Z2ex,P2,hj2!,h2!,opt1,Eflag,Iflag,eDflag)
+krawczykCW6 = PIn_KrawczykCW(Z2ex,P2,hj2!,h2!,opt1,Eflag,Iflag)
+@test newtonGS6[3] == true
+@test krawczykCW6[2] == true
+
+# Test Problem #4 (Extended Division)
+Z3 = [Interval(-10, 10)]
+newtonGS7 = PI_NewtonGS(Z3,P2,hj2,h2,opt1,Eflag,Iflag,eDflag)
+newtonGS8 = PIn_NewtonGS(Z3,P2,hj2!,h2!,opt1,Eflag,Iflag,eDflag)
+@test 0.285713 - 1E-4 <= newtonGS7[1][1].lo <= 0.285713 + 1E-4
+@test 10 - 1E-4 <= newtonGS7[1][1].hi <= 10 + 1E-4
+@test -10 - 1E-4 <= newtonGS7[2][1].lo <= -10 + 1E-4
+@test -0.13793 - 1E-4 <= newtonGS7[2][1].hi <= -0.13793 + 1E-4
+@test newtonGS7[3] == false
+@test newtonGS7[4] == false
+@test newtonGS7[5] == true
+@test 0.285713 - 1E-4 <= newtonGS8[1][1].lo <= 0.285713 + 1E-4
+@test 10 - 1E-4 <= newtonGS8[1][1].hi <= 10 + 1E-4
+@test -10 - 1E-4 <= newtonGS8[2][1].lo <= -10 + 1E-4
+@test -0.13793 - 1E-4 <= newtonGS8[2][1].hi <= -0.13793 + 1E-4
+@test newtonGS8[3] == false
+@test newtonGS8[4] == false
+@test newtonGS8[5] == true
+
 
 end

@@ -29,7 +29,6 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
                      hj::Function,h::Function,
                      opt::Vector{Any},Eflag::Bool,
                      Iflag::Bool,eDflag::Bool) where {T<:AbstractFloat}
-  println(" ---------- begin out place newton ------------- ")
   # unpacks option file
   kmax::Int64 = opt[1]
   etol::Float64 = opt[2]
@@ -63,9 +62,6 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     B = Y*H
     M = Y*J
   end
-println("iteration ($k)")
-println("preconditioned H: $B")
-println("preconditioned J: $M")
 
   for i=1:nx
     S1 = Interval(0.0)
@@ -77,25 +73,19 @@ println("preconditioned J: $M")
         S2 += M[i,j]*(X[j]-x_mid[j])
       end
     end
-    #println("M[$i,$i].lo: $(M[i,i].lo)")
-    #println("M[$i,$i].hi: $(M[i,i].hi)")
-    #println("M check: $(M[i,i].lo*M[i,i].hi > 0.0)")
     if M[i,i].lo*M[i,i].hi > 0.0
       N[i] = x_mid[i] - (B[i]+S1+S2)/M[i,i]
     else
-      Ntemp = N
+      Ntemp = copy(N)
       eD,N[i],Ntemp[i] = extProcess(N[i],X[i],M[i,i],S1,S2,B[i],rtol)
       if eD == 1
         eDflag = true
-        Xtemp = X
+        Xtemp = copy(X)
         Xtemp[i] = Ntemp[i] ∩ X[i]
         X[i] = N[i] ∩ X[i]
         return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
       end
     end
-    #println("N[$i]: $(N[i])")
-    #println("X[$i]: $(X[i])")
-    #println("N[$i] in X[$i]: $(Strict_XinY(N[i],X[i]))")
     if Strict_XinY(N[i],X[i])
       inclusion[i] = true
       inclusionHigh[i] = true
@@ -110,7 +100,6 @@ println("preconditioned J: $M")
         inclusionHigh[i] = true
       end
     end
-    #println("N[$i] & X[$i] not disjoint: $(~isdisjoint(N[i],X[i]))")
     if ~isdisjoint(N[i],X[i])
       X[i] = N[i] ∩ X[i]
     else
@@ -148,9 +137,6 @@ println("preconditioned J: $M")
       B = Y*H
       M = Y*J
     end
-  println("iteration ($k)")
-  println("preconditioned H: $B")
-  println("preconditioned J: $M")
 
     for i=1:nx
       S1 = Interval(0.0)
@@ -162,25 +148,19 @@ println("preconditioned J: $M")
           S2 += M[i,j]*(X[j]-x_mid[j])
         end
       end
-      #println("M[$i,$i].lo: $(M[i,i].lo)")
-      #println("M[$i,$i].hi: $(M[i,i].hi)")
-      #println("M check: $(M[i,i].lo*M[i,i].hi > 0.0)")
       if M[i,i].lo*M[i,i].hi > 0.0
         N[i] = x_mid[i] - (B[i]+S1+S2)/M[i,i]
       else
-        Ntemp = N
+        Ntemp = copy(N)
         eD,N[i],Ntemp[i] = extProcess(N[i],X[i],M[i,i],S1,S2,B[i],rtol)
         if eD == 1
           eDflag = true
-          Xtemp = X
+          Xtemp = copy(X)
           Xtemp[i] = Ntemp[i] ∩ X[i]
           X[i] = N[i] ∩ X[i]
           return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
         end
       end
-      #println("N[$i]: $(N[i])")
-      #println("X[$i]: $(X[i])")
-      #println("N[$i] in X[$i]: $(Strict_XinY(N[i],X[i]))")
       if Strict_XinY(N[i],X[i])
         inclusion[i] = true
         inclusionHigh[i] = true
@@ -195,7 +175,6 @@ println("preconditioned J: $M")
           inclusionHigh[i] = true
         end
       end
-      #println("N[$i] & X[$i] not disjoint: $(~isdisjoint(N[i],X[i]))")
       if ~isdisjoint(N[i],X[i])
         X[i] = N[i] ∩ X[i]
       else
@@ -223,7 +202,6 @@ println("preconditioned J: $M")
     Eflag = true
   end
   Xtemp = copy(X)
-  println(" ---------- end out place newton ------------- ")
   return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
 end
 
@@ -288,9 +266,6 @@ function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     B = Y*H
     M = eye(nx)-Y*J
   end
-  #println("iteration ($k)")
-  #println("preconditioned H: $B")
-  #println("preconditioned J: $M")
 
   for i=1:nx
     S1 = Interval(0.0)
@@ -353,9 +328,6 @@ function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
       B = Y*H
       M = eye(nx)-Y*J
     end
-#    println("iteration ($k)")
-#    println("preconditioned H: $B")
-#    println("preconditioned J: $M")
 
     for i=1:nx
       S1 = Interval(0.0)
@@ -408,7 +380,6 @@ function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   if exclusion
     Eflag = true
   end
-#  println(" ----------end out place kraw ------------- ")
   return X,Eflag,Iflag,inclusionLow,inclusionHigh
 end
 
@@ -488,9 +459,6 @@ function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   h!(H,x_mid,P)
   hj!(J,X,P)
   Sparse_Precondition!(H,J,mid.(J),SSto)
-  println("iteration ($k)")
-  println("preconditioned H: $H")
-  println("preconditioned J: $J")
   Mt = transpose(J)
   for i=1:nx
     S1 = Interval(0.0)
@@ -508,11 +476,11 @@ function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     if S3.lo*S3.hi > 0.0
       N[i] = x_mid[i] - (H[i]+S1+S2)/S3
     else
-      Ntemp = N
+      Ntemp = copy(N)
       eD,N[i],Ntemp[i] = extProcess(N[i],X[i],S3,S1,S2,H[i],rtol)
       if eD == 1
         eDflag = true
-        Xtemp = X
+        Xtemp = copy(X)
         Xtemp[i] = Ntemp[i] ∩ X[i]
         X[i] = N[i] ∩ X[i]
         return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
@@ -562,9 +530,6 @@ function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     h!(H,x_mid,P)
     hj!(J,X,P)
     Sparse_Precondition!(H,J,mid.(J),SSto)
-    println("iteration ($k)")
-    println("preconditioned H: $H")
-    println("preconditioned J: $J")
     Mt = transpose(J)
 
     for i=1:nx
@@ -583,11 +548,11 @@ function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
       if S3.lo*S3.hi > 0.0
         N[i] = x_mid[i] - (H[i]+S1+S2)/S3
       else
-        Ntemp = N
+        Ntemp = copy(N)
         eD,N[i],Ntemp[i] = extProcess(N[i],X[i],S3,S1,S2,H[i],rtol)
         if eD == 1
           eDflag = true
-          Xtemp = X
+          Xtemp = copy(X)
           Xtemp[i] = Ntemp[i] ∩ X[i]
           X[i] = N[i] ∩ X[i]
           return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
@@ -669,7 +634,6 @@ function PIn_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
                      hj!::Function,h!::Function,
                      opt::Vector{Any},Eflag::Bool,Iflag::Bool) where {T<:AbstractFloat}
 
-#  println(" ---------- begin in place kraw ------------- ")
   # unpacks option file
   kmax::Int64 = opt[1]
   etol::Float64 = opt[2]
@@ -707,9 +671,6 @@ function PIn_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   h!(H,x_mid,P)
   hj!(J,X,P)
   Sparse_Precondition!(H,J,mid.(J),SSto)
-#  println("iteration ($k)")
-#  println("preconditioned H: $H")
-#  println("preconditioned J: $J")
   Mt = transpose(J)
   for i=1:nx
     for q=(Mt.colptr[i]):(Mt.colptr[i+1]-1)
@@ -762,9 +723,6 @@ function PIn_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     h!(H,x_mid,P)
     hj!(J,X,P)
     Sparse_Precondition!(H,J,mid.(J),SSto)
-#    println("iteration ($k)")
-#    println("preconditioned H: $H")
-#    println("preconditioned J: $J")
     Mt = transpose(J)
     N = [Interval(0.0) for i=1:nx]
     for i=1:nx
@@ -817,6 +775,5 @@ function PIn_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   if exclusion
     Eflag = true
   end
-#  println(" ---------- begin out place kraw ------------- ")
   return X,Eflag,Iflag,inclusionLow,inclusionHigh
 end

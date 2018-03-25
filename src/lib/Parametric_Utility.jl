@@ -144,10 +144,10 @@ end
 
 Subfunction to generate output for extended division.
 """
-function extDivide(A::Interval{T},B::Interval{T},C::Interval{T}) where {T<:AbstractFloat}
+function extDivide(A::Interval{T}) where {T<:AbstractFloat}
   if ((A.lo == -0.0) && (A.hi == 0.0))
-    B = Interval(-Inf,Inf)
-    C = B
+    B::Interval{T} = Interval(-Inf,Inf)
+    C::Interval{T} = B
     return 0,B,C
   end
   if (A.lo == 0.0)
@@ -163,7 +163,6 @@ function extDivide(A::Interval{T},B::Interval{T},C::Interval{T}) where {T<:Abstr
     C = Interval(1.0/A.hi,Inf)
     return 3,B,C
   end
-  return -1,B,C
 end
 
 """
@@ -177,40 +176,45 @@ function extProcess(N::Interval{T},X::Interval{T},Mii::Interval{T},
                     S1::Interval{T},S2::Interval{T},B::Interval{T},rtol::Float64) where {T<:AbstractFloat}
   v = 1
   Ntemp::Interval{T} = copy(N)
-  IML::Interval{T} = Interval(0.0)
-  IMR::Interval{T} = Interval(0.0)
   M::Interval{T} = (B+S1+S2)+Interval(-rtol,rtol)
-  if (M.lo<=0 || M.hi>=0)
-    N = Interval(-Inf,Inf)
-    return 0, N, Ntemp
+  if (M.lo<=0 && M.hi>=0)
+    println("branch1")
+    return 0, Interval(-Inf,Inf), Ntemp
   end
   if (v == 1)
-    k,IML,IMR = extDivide(Mii,IML,IMR)
+    println("Mii: $Mii")
+    k,IML::Interval{T},IMR::Interval{T} = extDivide(Mii)
+    println("k: $k")
     if (k == 1)
-      N = mid(X)-M*IML
-      return 0, N, Ntemp
+      println("branch2")
+      return 0, (mid(X)-M*IML), Ntemp
     elseif (k == 2)
-      N = mid(X)-M*IMR
-      return 0, N, Ntemp
+      println("branch3")
+      return 0, (mid(X)-M*IMR), Ntemp
     elseif (k == 3)
       NR = mid(X)-M*IMR
       NL = mid(X)-M*IML
+      print("NR: $NR")
+      print("NL: $NL")
       if (~isdisjoint(NL,X) && isdisjoint(NR,X))
-        N = NL
-        return 0, N, Ntemp
+        println("branch4")
+        return 0, NL, Ntemp
       elseif (~isdisjoint(NR,X) && isdisjoint(NL,X))
-        N = NR
-        return 0, N, Ntemp
+        println("branch5")
+        return 0, NR, Ntemp
       elseif (~isdisjoint(NL,X) && ~isdisjoint(NR,X))
+        println("branch6")
         N = NL
         Ntemp = NR
-        return 1, N, Ntemp
+        print("NR: $NR")
+        print("NL: $NL")
+        return 1, NL, NR
       else
+        println("branch7")
         return -1, N, Ntemp
       end
     end
-  else
-    N = Interval(-Inf,Inf)
-    return 0, N, Ntemp
   end
+  println("branch8")
+  return 0, N, Ntemp
 end
