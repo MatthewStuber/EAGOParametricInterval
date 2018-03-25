@@ -141,7 +141,7 @@ function Sparse_Precondition!(H::Vector{Ta},J::SparseMatrixCSC{Ta,Ti},
 
      # solves x = Qy
      st.Xh = st.Yh[lu[:q]]
-     st.Xj = st.Yj[:,lu[:q]]
+     st.Xj = st.Yj[lu[:q],:]
 
      # stores the preconditioned matrices back in place
      H[:] = st.Xh[:,1]
