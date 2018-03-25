@@ -55,13 +55,13 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   H::Union{Array{Interval{T},2},Vector{Interval{T}}} = h(x_mid,P)
   J::Union{Array{Interval{T},2},Vector{Interval{T}}} = hj(X,P)
   Y::Union{Array{T,2},Vector{T}} = Preconditioner(hj,X,P,jac="User")
-  if (nx == 1)
-    B::Vector{Interval{T}} = Y.*H
-    M::Union{Array{Interval{T},2},Vector{Interval{T}}} = eye(nx)-Y.*J
-  else
+#  if (nx == 1)
+#    B::Vector{Interval{T}} = Y.*H
+#    M::Union{Array{Interval{T},2},Vector{Interval{T}}} = eye(nx)-Y.*J
+#  else
     B = Y*H
-    M = eye(nx)-Y*J
-  end
+    M = Y*J
+#  end
 
   for i=1:nx
     S1 = Interval(0.0)
@@ -73,6 +73,9 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
         S2 += M[i,j]*(X[j]-x_mid[j])
       end
     end
+    #println("M[$i,$i].lo: $(M[i,i].lo)")
+    #println("M[$i,$i].hi: $(M[i,i].hi)")
+    #println("M check: $(M[i,i].lo*M[i,i].hi > 0.0)")
     if M[i,i].lo*M[i,i].hi > 0.0
       N[i] = x_mid[i] - (B[i]+S1+S2)/M[i,i]
     else
@@ -86,6 +89,9 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
         return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
       end
     end
+    #println("N[$i]: $(N[i])")
+    #println("X[$i]: $(X[i])")
+    #println("N[$i] in X[$i]: $(Strict_XinY(N[i],X[i]))")
     if Strict_XinY(N[i],X[i])
       inclusion[i] = true
       inclusionHigh[i] = true
@@ -100,6 +106,7 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
         inclusionHigh[i] = true
       end
     end
+    #println("N[$i] & X[$i] not disjoint: $(~isdisjoint(N[i],X[i]))")
     if ~isdisjoint(N[i],X[i])
       X[i] = N[i] ∩ X[i]
     else
@@ -130,13 +137,13 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     H = h(x_mid,P)
     J = hj(X,P)
     Y = Preconditioner(hj,X,P,jac="User")
-    if (nx == 1)
-      B = Y.*H
-      M = eye(nx)-Y.*J
-    else
+    #if (nx == 1)
+  #    B = Y.*H
+  #    M = eye(nx)-Y.*J
+  #  else
       B = Y*H
-      M = eye(nx)-Y*J
-    end
+      M = Y*J
+  #  end
 
     for i=1:nx
       S1 = Interval(0.0)
@@ -148,6 +155,9 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
           S2 += M[i,j]*(X[j]-x_mid[j])
         end
       end
+      #println("M[$i,$i].lo: $(M[i,i].lo)")
+      #println("M[$i,$i].hi: $(M[i,i].hi)")
+      #println("M check: $(M[i,i].lo*M[i,i].hi > 0.0)")
       if M[i,i].lo*M[i,i].hi > 0.0
         N[i] = x_mid[i] - (B[i]+S1+S2)/M[i,i]
       else
@@ -161,6 +171,9 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
           return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
         end
       end
+      #println("N[$i]: $(N[i])")
+      #println("X[$i]: $(X[i])")
+      #println("N[$i] in X[$i]: $(Strict_XinY(N[i],X[i]))")
       if Strict_XinY(N[i],X[i])
         inclusion[i] = true
         inclusionHigh[i] = true
@@ -175,6 +188,7 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
           inclusionHigh[i] = true
         end
       end
+      #println("N[$i] & X[$i] not disjoint: $(~isdisjoint(N[i],X[i]))")
       if ~isdisjoint(N[i],X[i])
         X[i] = N[i] ∩ X[i]
       else
@@ -259,15 +273,15 @@ function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   J::Union{Array{Interval{T},2},Vector{Interval{T}}} = hj(X,P)
   Y::Union{Array{T,2},Vector{T}} = Preconditioner(hj,X,P,jac="User")
   if (nx == 1)
-    println("ran to me 1")
+    #println("ran to me 1")
     B::Vector{Interval{T}} = Y.*H
     M::Union{Array{Interval{T},2},Vector{Interval{T}}} = eye(nx)-Y.*J
   else
-    println("ran to me 2")
+    #println("ran to me 2")
     B = Y*H
     M = eye(nx)-Y*J
   end
-  println("ran to me 3")
+  #println("ran to me 3")
 
   for i=1:nx
     S1 = Interval(0.0)
