@@ -416,7 +416,6 @@ function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
                      hj!::Function,h!::Function,
                      opt::Vector{Any},Eflag::Bool,
                      Iflag::Bool,eDflag::Bool) where {T<:AbstractFloat}
-  println(" ---------- begin in place newton ------------- ")
   # unpacks option file
   kmax::Int64 = opt[1]
   etol::Float64 = opt[2]
@@ -599,7 +598,6 @@ function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     Eflag = true
   end
   Xtemp = copy(X)
-  println(" ---------- end in place newton ------------- ")
   return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
 end
 

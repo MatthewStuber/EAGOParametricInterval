@@ -178,43 +178,29 @@ function extProcess(N::Interval{T},X::Interval{T},Mii::Interval{T},
   Ntemp::Interval{T} = copy(N)
   M::Interval{T} = (B+S1+S2)+Interval(-rtol,rtol)
   if (M.lo<=0 && M.hi>=0)
-    println("branch1")
     return 0, Interval(-Inf,Inf), Ntemp
   end
   if (v == 1)
-    println("Mii: $Mii")
     k,IML::Interval{T},IMR::Interval{T} = extDivide(Mii)
-    println("k: $k")
     if (k == 1)
-      println("branch2")
       return 0, (mid(X)-M*IML), Ntemp
     elseif (k == 2)
-      println("branch3")
       return 0, (mid(X)-M*IMR), Ntemp
     elseif (k == 3)
       NR = mid(X)-M*IMR
       NL = mid(X)-M*IML
-      print("NR: $NR")
-      print("NL: $NL")
       if (~isdisjoint(NL,X) && isdisjoint(NR,X))
-        println("branch4")
         return 0, NL, Ntemp
       elseif (~isdisjoint(NR,X) && isdisjoint(NL,X))
-        println("branch5")
         return 0, NR, Ntemp
       elseif (~isdisjoint(NL,X) && ~isdisjoint(NR,X))
-        println("branch6")
         N = NL
         Ntemp = NR
-        print("NR: $NR")
-        print("NL: $NL")
         return 1, NL, NR
       else
-        println("branch7")
         return -1, N, Ntemp
       end
     end
   end
-  println("branch8")
   return 0, N, Ntemp
 end
