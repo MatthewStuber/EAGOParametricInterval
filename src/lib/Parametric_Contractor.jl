@@ -22,13 +22,14 @@ Returns a tuple `(X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh)` where
 * `Iflag::Bool`: True if unique implicit function exists in box
 * `inclusionLow::Vector{Bool}`: Each component is true if corresponding variable
                                 contracted from lower bound
-* inclusionHigh::Vector{Bool}`: Each component is true if corresponding variable
+* `inclusionHigh::Vector{Bool}`: Each component is true if corresponding variable
                                 contracted from upper bound
 """
 function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
                      hj::Function,h::Function,
                      opt::Vector{Any},Eflag::Bool,
                      Iflag::Bool,eDflag::Bool) where {T<:AbstractFloat}
+  println(" ---------- begin out place newton ------------- ")
   # unpacks option file
   kmax::Int64 = opt[1]
   etol::Float64 = opt[2]
@@ -55,13 +56,16 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   H::Union{Array{Interval{T},2},Vector{Interval{T}}} = h(x_mid,P)
   J::Union{Array{Interval{T},2},Vector{Interval{T}}} = hj(X,P)
   Y::Union{Array{T,2},Vector{T}} = Preconditioner(hj,X,P,jac="User")
-#  if (nx == 1)
-#    B::Vector{Interval{T}} = Y.*H
-#    M::Union{Array{Interval{T},2},Vector{Interval{T}}} = eye(nx)-Y.*J
-#  else
+  if (nx == 1)
+    B::Vector{Interval{T}} = Y.*H
+    M::Union{Array{Interval{T},2},Vector{Interval{T}}} = Y.*J
+  else
     B = Y*H
     M = Y*J
-#  end
+  end
+println("iteration ($k)")
+println("preconditioned H: $B")
+println("preconditioned J: $M")
 
   for i=1:nx
     S1 = Interval(0.0)
@@ -137,13 +141,16 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     H = h(x_mid,P)
     J = hj(X,P)
     Y = Preconditioner(hj,X,P,jac="User")
-    #if (nx == 1)
-  #    B = Y.*H
-  #    M = eye(nx)-Y.*J
-  #  else
+    if (nx == 1)
+      B = Y.*H
+      M = Y.*J
+    else
       B = Y*H
       M = Y*J
-  #  end
+    end
+  println("iteration ($k)")
+  println("preconditioned H: $B")
+  println("preconditioned J: $M")
 
     for i=1:nx
       S1 = Interval(0.0)
@@ -216,6 +223,7 @@ function PI_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     Eflag = true
   end
   Xtemp = copy(X)
+  println(" ---------- end out place newton ------------- ")
   return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
 end
 
@@ -242,12 +250,13 @@ Returns a tuple `(X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh)` where
 * `Iflag::Bool`: True if unique implicit function exists in box
 * `inclusionLow::Vector{Bool}`: Each component is true if corresponding variable
                                 contracted from lower bound
-* inclusionHigh::Vector{Bool}`: Each component is true if corresponding variable
+* `inclusionHigh::Vector{Bool}`: Each component is true if corresponding variable
                                 contracted from upper bound
 """
 function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
                      hj::Function,h::Function,
                      opt::Vector{Any},Eflag::Bool,Iflag::Bool) where {T<:AbstractFloat}
+  #println(" ---------- begin out place kraw ------------- ")
   # unpacks option file
   kmax::Int64 = opt[1]
   etol::Float64 = opt[2]
@@ -273,15 +282,15 @@ function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   J::Union{Array{Interval{T},2},Vector{Interval{T}}} = hj(X,P)
   Y::Union{Array{T,2},Vector{T}} = Preconditioner(hj,X,P,jac="User")
   if (nx == 1)
-    #println("ran to me 1")
     B::Vector{Interval{T}} = Y.*H
     M::Union{Array{Interval{T},2},Vector{Interval{T}}} = eye(nx)-Y.*J
   else
-    #println("ran to me 2")
     B = Y*H
     M = eye(nx)-Y*J
   end
-  #println("ran to me 3")
+  #println("iteration ($k)")
+  #println("preconditioned H: $B")
+  #println("preconditioned J: $M")
 
   for i=1:nx
     S1 = Interval(0.0)
@@ -344,6 +353,9 @@ function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
       B = Y*H
       M = eye(nx)-Y*J
     end
+#    println("iteration ($k)")
+#    println("preconditioned H: $B")
+#    println("preconditioned J: $M")
 
     for i=1:nx
       S1 = Interval(0.0)
@@ -396,6 +408,7 @@ function PI_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   if exclusion
     Eflag = true
   end
+#  println(" ----------end out place kraw ------------- ")
   return X,Eflag,Iflag,inclusionLow,inclusionHigh
 end
 
@@ -425,13 +438,14 @@ Returns a tuple `(X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh)` where
 * `Iflag::Bool`: True if unique implicit function exists in box
 * `inclusionLow::Vector{Bool}`: Each component is true if corresponding variable
                                 contracted from lower bound
-* inclusionHigh::Vector{Bool}`: Each component is true if corresponding variable
+* `inclusionHigh::Vector{Bool}`: Each component is true if corresponding variable
                                 contracted from upper bound
 """
 function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
                      hj!::Function,h!::Function,
                      opt::Vector{Any},Eflag::Bool,
                      Iflag::Bool,eDflag::Bool) where {T<:AbstractFloat}
+  println(" ---------- begin in place newton ------------- ")
   # unpacks option file
   kmax::Int64 = opt[1]
   etol::Float64 = opt[2]
@@ -474,6 +488,9 @@ function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   h!(H,x_mid,P)
   hj!(J,X,P)
   Sparse_Precondition!(H,J,mid.(J),SSto)
+  println("iteration ($k)")
+  println("preconditioned H: $H")
+  println("preconditioned J: $J")
   Mt = transpose(J)
   for i=1:nx
     S1 = Interval(0.0)
@@ -545,6 +562,9 @@ function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     h!(H,x_mid,P)
     hj!(J,X,P)
     Sparse_Precondition!(H,J,mid.(J),SSto)
+    println("iteration ($k)")
+    println("preconditioned H: $H")
+    println("preconditioned J: $J")
     Mt = transpose(J)
 
     for i=1:nx
@@ -614,6 +634,7 @@ function PIn_NewtonGS(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     Eflag = true
   end
   Xtemp = copy(X)
+  println(" ---------- end in place newton ------------- ")
   return X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh
 end
 
@@ -641,12 +662,14 @@ Returns a tuple `(X,Xtemp,Eflag,Iflag,eDflag,inclusionLow,inclusionHigh)` where
 * `Iflag::Bool`: True if unique implicit function exists in box
 * `inclusionLow::Vector{Bool}`: Each component is true if corresponding variable
                                 contracted from lower bound
-* inclusionHigh::Vector{Bool}`: Each component is true if corresponding variable
+* `inclusionHigh::Vector{Bool}`: Each component is true if corresponding variable
                                 contracted from upper bound
 """
 function PIn_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
                      hj!::Function,h!::Function,
                      opt::Vector{Any},Eflag::Bool,Iflag::Bool) where {T<:AbstractFloat}
+
+#  println(" ---------- begin in place kraw ------------- ")
   # unpacks option file
   kmax::Int64 = opt[1]
   etol::Float64 = opt[2]
@@ -684,6 +707,9 @@ function PIn_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   h!(H,x_mid,P)
   hj!(J,X,P)
   Sparse_Precondition!(H,J,mid.(J),SSto)
+#  println("iteration ($k)")
+#  println("preconditioned H: $H")
+#  println("preconditioned J: $J")
   Mt = transpose(J)
   for i=1:nx
     for q=(Mt.colptr[i]):(Mt.colptr[i+1]-1)
@@ -736,6 +762,9 @@ function PIn_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
     h!(H,x_mid,P)
     hj!(J,X,P)
     Sparse_Precondition!(H,J,mid.(J),SSto)
+#    println("iteration ($k)")
+#    println("preconditioned H: $H")
+#    println("preconditioned J: $J")
     Mt = transpose(J)
     N = [Interval(0.0) for i=1:nx]
     for i=1:nx
@@ -788,5 +817,6 @@ function PIn_KrawczykCW(X0::Vector{Interval{T}},P::Vector{Interval{T}},
   if exclusion
     Eflag = true
   end
+#  println(" ---------- begin out place kraw ------------- ")
   return X,Eflag,Iflag,inclusionLow,inclusionHigh
 end

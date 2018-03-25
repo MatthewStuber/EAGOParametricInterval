@@ -4,9 +4,9 @@ using IntervalArithmetic
 using EAGOParametricInterval
 
 # sets options for contractor
-opt1 = Any[10    #Int64: Number of iterations
+opt1 = Any[50    #Int64: Number of iterations
        1.0E-30 #Float64: Tolerance for equality of
-       1.0E-6 #Float64: Add Interval(1E-8,1E8) to add to M[i,i] when
+       1.0E-10 #Float64: Add Interval(1E-8,1E8) to add to M[i,i] when
               #         processing extended interval division.
       ]
 ################################################################################
