@@ -45,8 +45,9 @@ export Param_Bisect_Opts,setprec, Miranda, MirandaExc, partialIncTop,
        partialIncBot, Strict_XinY, isEqual, extDivide, extProcess,
 =#
 
-export  PI_NewtonGS, PI_KrawczykCW, 
+export  PI_NewtonGS, PI_KrawczykCW,
         PIn_NewtonGS, PIn_KrawczykCW,
+        PId_NewtonGS, PId_KrawczykCW,
         Sparse_Precondition!, SparseInSto
 
 end

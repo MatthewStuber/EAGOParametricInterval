@@ -147,3 +147,22 @@ function Sparse_Precondition!(H::Vector{Ta},J::SparseMatrixCSC{Ta,Ti},
      H[:] = st.Xh[:,1]
      J[:] = st.Xj[:,1:(st.nx)]
 end
+
+"""
+     Dense_Precondition!(H::Vector{Ta},J::Array{Ta,2},P::Array{Tp,2})
+
+Preconditions the H & J to inv(P)H and inv(P)J using a sparse LU factorization
+method with full pivoting. J and P must be of size nx-by-nx and H must be of
+size nx. st is the inplace storage type.
+"""
+function Dense_Precondition!(H::Vector{Ta},J::Array{Ta,2},P::Array{Tp,2},nx) where {Ta,Tp}
+
+     # generate PLU factorization
+     lu = lufact(P)
+     JHmerge = [J H]
+     yH = lu[:L]\JHmerge[lu[:p],:]
+     xH = lu[:U]\yH
+     # stores the preconditioned matrices back in place
+     H[:] = xH[:,nx+1]
+     J[:] = xH[:,1:nx]
+end
