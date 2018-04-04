@@ -1,5 +1,6 @@
 module EAGOParametricInterval
 
+using EAGOIntervalArithmetic
 using IntervalArithmetic
 
 type Param_Bisect_Opts

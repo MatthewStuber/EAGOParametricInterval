@@ -109,6 +109,16 @@ function Strict_XinY(X::Vector{Interval{T}},Y::Vector{Interval{T}}) where {T<:Ab
   end
   return k
 end
+function Strict_XinY(X::Vector{MCInterval{T}},Y::Vector{MCInterval{T}}) where {T<:AbstractFloat}
+  k::Bool = true
+  for i=1:length(X)
+    if ((X[i].lo<=Y[i].lo)||
+        (X[i].hi>=Y[i].hi))
+      k = false
+    end
+  end
+  return k
+end
 
 """
     Strict_XinY(X::Interval{T},Y::Interval{T})
@@ -116,6 +126,11 @@ end
 Returns true if X is strictly in Y (X.lo>Y.lo && X.hi<Y.hi).
 """
 function Strict_XinY(X::Interval{T},Y::Interval{T}) where {T<:AbstractFloat}
+  (X.lo<=Y.lo) && return false
+  (X.hi>=Y.hi) && return false
+  return true
+end
+function Strict_XinY(X::MCInterval{T},Y::MCInterval{T}) where {T<:AbstractFloat}
   (X.lo<=Y.lo) && return false
   (X.hi>=Y.hi) && return false
   return true
@@ -138,6 +153,18 @@ function isEqual(X1::Vector{Interval{T}},X2::Vector{Interval{T}},
   end
   return out
 end
+function isEqual(X1::Vector{MCInterval{T}},X2::Vector{MCInterval{T}},
+                 atol::Float64) where {T<:AbstractFloat}
+  out::Bool = true
+  for i=1:length(X1)
+    if (abs(X1[i].lo-X2[i].lo)>=atol ||
+        abs(X1[i].hi-X2[i].hi)>=atol )
+        out = false
+        break
+    end
+  end
+  return out
+end
 
 """
     extDivide(A::Interval{T},B::Interval{T},C::Interval{T})
@@ -145,6 +172,7 @@ end
 Subfunction to generate output for extended division.
 """
 function extDivide(A::Interval{T}) where {T<:AbstractFloat}
+  #println("start extdivide")
   if ((A.lo == -0.0) && (A.hi == 0.0))
     B::Interval{T} = Interval(-Inf,Inf)
     C::Interval{T} = B
@@ -161,6 +189,27 @@ function extDivide(A::Interval{T}) where {T<:AbstractFloat}
   else
     B = Interval(-Inf,1.0/A.lo)
     C = Interval(1.0/A.hi,Inf)
+    return 3,B,C
+  end
+end
+function extDivide(A::MCInterval{T}) where {T<:AbstractFloat}
+  #println("start extdivide")
+  if ((A.lo == -0.0) && (A.hi == 0.0))
+    B::MCInterval{T} = MCInterval{T}(-Inf,Inf)
+    C::MCInterval{T} = B
+    return 0,B,C
+  end
+  if (A.lo == 0.0)
+    B = MCInterval{T}(1.0/A.hi,Inf)
+    C = MCInterval{T}(Inf,Inf)
+    return 1,B,C
+  elseif (A.hi == 0.0)
+    B = MCInterval{T}(-Inf,1.0/A.lo)
+    C = MCInterval{T}(-Inf,-Inf)
+    return 2,B,C
+  else
+    B = MCInterval{T}(-Inf,1.0/A.lo)
+    C = MCInterval{T}(1.0/A.hi,Inf)
     return 3,B,C
   end
 end
@@ -182,6 +231,39 @@ function extProcess(N::Interval{T},X::Interval{T},Mii::Interval{T},
   end
   if (v == 1)
     k,IML::Interval{T},IMR::Interval{T} = extDivide(Mii)
+    if (k == 1)
+      return 0, (mid(X)-M*IML), Ntemp
+    elseif (k == 2)
+      return 0, (mid(X)-M*IMR), Ntemp
+    elseif (k == 3)
+      NR = mid(X)-M*IMR
+      NL = mid(X)-M*IML
+      if (~isdisjoint(NL,X) && isdisjoint(NR,X))
+        return 0, NL, Ntemp
+      elseif (~isdisjoint(NR,X) && isdisjoint(NL,X))
+        return 0, NR, Ntemp
+      elseif (~isdisjoint(NL,X) && ~isdisjoint(NR,X))
+        N = NL
+        Ntemp = NR
+        return 1, NL, NR
+      else
+        return -1, N, Ntemp
+      end
+    end
+  end
+  return 0, N, Ntemp
+end
+
+function extProcess(N::MCInterval{T},X::MCInterval{T},Mii::MCInterval{T},
+                    S1::MCInterval{T},S2::MCInterval{T},B::MCInterval{T},rtol::Float64) where {T<:AbstractFloat}
+  v = 1
+  Ntemp::MCInterval{T} = copy(N)
+  M::MCInterval{T} = (B+S1+S2)+MCInterval(-rtol,rtol)
+  if (M.lo<=0 && M.hi>=0)
+    return 0, MCInterval(-Inf,Inf), Ntemp
+  end
+  if (v == 1)
+    k,IML::MCInterval{T},IMR::MCInterval{T} = extDivide(Mii)
     if (k == 1)
       return 0, (mid(X)-M*IML), Ntemp
     elseif (k == 2)

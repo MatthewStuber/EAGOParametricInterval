@@ -155,14 +155,39 @@ Preconditions the H & J to inv(P)H and inv(P)J using a sparse LU factorization
 method with full pivoting. J and P must be of size nx-by-nx and H must be of
 size nx. st is the inplace storage type.
 """
-function Dense_Precondition!(H::Vector{Ta},J::Array{Ta,2},P::Array{Tp,2},nx) where {Ta,Tp}
 
-     # generate PLU factorization
-     lu = lufact(P)
-     JHmerge = [J H]
-     yH = lu[:L]\JHmerge[lu[:p],:]
-     xH = lu[:U]\yH
-     # stores the preconditioned matrices back in place
-     H[:] = xH[:,nx+1]
-     J[:] = xH[:,1:nx]
+function LowMatMult!(a::Array{U,2},b::Array{T,2},m::Int64,n::Int64) where {T,U<:AbstractFloat}
+    @inbounds for i=1:m
+        @inbounds for j = 1:n
+            if (b[j,i] != zero(T))
+                temp::T = b[j,i]
+                @inbounds for k=(j+1):(n)
+                    b[k,i] = b[k,i]-A[k,j]*temp
+                end
+            end
+        end
+    end
+end
+
+function UppMatMult!(a::Array{U,2},b::Array{T,2},m::Int64,n::Int64) where {T,U<:AbstractFloat}
+     @inbounds for i = 1:m
+          @inbounds for j = n:-1:1
+               if (b[j,i] != zero(T))
+                    temp::T = b[j,i]
+                    b[j,i] = temp/A[j,j]
+                    @inbounds for k=1:(j-1)
+                    b[k,i] = b[k,i]-A[k,j]*temp
+                    end
+               end
+          end
+     end
+end
+
+function Dense_Precondition!(H::Vector{S},J::Array{S,2},Y::Array{U,2},nx::Int64) where {S,U<:AbstractFloat}
+         lu = lufact(Y)
+         HJ::Array{S,2} = [H, J][lu[:p],:]
+         LowMatMult!(lu[:L],HJ,nx+1,nx)
+         UppMatMult!(lu[:U],HJ,nx+1,nx)
+         H[:] = HJ[:,1]
+         J[:] = HJ[:,2:(nx+1)]
 end

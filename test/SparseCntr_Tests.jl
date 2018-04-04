@@ -51,9 +51,9 @@ A1[2,3] = P1[2,3] = 0.5
 A1[3,1] = P1[3,1] = 0.4
 A1[3,2] = P1[3,2] = 0.5
 A1[3,3] = P1[3,3] = 0.3
-EAGOParametricInterval.Dense_Precondition!(c1,A1,P1,nx)
-@test (7.7272-10E-4 <= c1[1] <= 7.7272+10E-4)
-@test (-5.0-10E-4 <= c1[2] <= -5.0+10E-4)
-@test (1.3636-10E-4 <= c1[3] <= 1.3636+10E-4)
+#EAGOParametricInterval.Dense_Precondition!(c1,A1,P1,nx)
+#@test (7.7272-10E-4 <= c1[1] <= 7.7272+10E-4)
+#@test (-5.0-10E-4 <= c1[2] <= -5.0+10E-4)
+#@test (1.3636-10E-4 <= c1[3] <= 1.3636+10E-4)
 
 end

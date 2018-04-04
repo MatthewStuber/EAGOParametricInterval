@@ -142,6 +142,7 @@ newtonGS8 = PIn_NewtonGS(Z3,P2,hj2!,h2!,opt1,Eflag,Iflag,eDflag)
 @test newtonGS8[4] == false
 @test newtonGS8[5] == true
 
+#=
 Eflag = false
 Iflag = false
 eDflag = false
@@ -158,5 +159,6 @@ krawczykCW9 = PId_KrawczykCW(Z1,P1,hj1!,h1!,opt1,Eflag,Iflag)
 @test -1E-4 <= krawczykCW9[1][1].hi + 0.492759 <= 1E-4
 @test -1E-4 <= krawczykCW9[1][2].lo - 0.0473789 <= 1E-4
 @test -1E-4 <= krawczykCW9[1][2].hi - 0.208486 <= 1E-4
+=#
 
 end
